@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Logowanie')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-4">
+          <div class="card shadow">
+            <div class="card-body">
+              <h3 class="text-center mb-4">Zaloguj się</h3>
+
+              <div th:if="${param.error}" class="alert alert-danger">
+                Błędny login lub hasło.
+              </div>
+              <div th:if="${param.success}" class="alert alert-success">
+                Rejestracja udana! Zaloguj się.
+              </div>
+
+              <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                  <label>Użytkownik</label>
+                  <input
+                    type="text"
+                    name="username"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label>Hasło</label>
+                  <input
+                    type="password"
+                    name="password"
+                    class="form-control"
+                    required
+                  />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  Wejdź
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

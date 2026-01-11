@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -30,20 +31,38 @@ public class SecurityConfig {
             
             // reguły dostępu do endpointów
             .authorizeHttpRequests(auth -> auth
-                // Publiczne endpointy (Rejestracja, Swagger, Baza danych H2)
-                .requestMatchers("/api/v1/auth/**", "/h2-console/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // zasoby statyczne
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 
-                // publiczny dostęp do podglądu książek (opcjonalnie)
-                .requestMatchers("/api/v1/books/**").permitAll() 
+                // publiczne widoki HTML (Strona główna, Rejestracja, Logowanie)
+                .requestMatchers("/", "/index", "/register", "/login").permitAll()
                 
-                // wszystko inne wymaga logowania
+                // publiczne API (Endpointy REST)
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                
+                // swagger i H2 Console
+                .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                
+                // wszystkie inne żądania wymagają bycia zalogowanym
                 .anyRequest().authenticated()
             )
             
-            // włączamy formularz logowania (dla przeglądarki)
-            .formLogin(withDefaults())
+            // konfiguracja naszego formularza logowania
+            .formLogin(login -> login
+                .loginPage("/login")        // adres naszego kontrolera (GET)
+                .loginProcessingUrl("/login") // adres, na który formularz wysyła dane (POST) -x Spring to obsłuży
+                .defaultSuccessUrl("/", true) // przekierowanie po sukcesie
+                .permitAll()
+            )
             
+            // konfiguracja wylogowania
+            .logout(logout -> logout
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // Pozwala na wylogowanie przez link
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+            )
+
             // włączamy Basic Auth (dla testowania w Postmanie)
             .httpBasic(withDefaults());
 

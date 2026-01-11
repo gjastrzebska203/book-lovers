@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Strona Główna')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container text-center mt-5">
+      <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+        <h1 class="display-5 fw-bold">Witaj w Book Lovers Community!</h1>
+        <p class="col-md-8 fs-4 mx-auto">
+          Twój osobisty katalog książek. Dołącz do nas, oceniaj, recenzuj i
+          śledź swoje postępy w czytaniu.
+        </p>
+        <div class="mt-4">
+          <a href="/register" class="btn btn-primary btn-lg px-4 gap-3"
+            >Załóż konto</a
+          >
+          <a href="/books" class="btn btn-outline-secondary btn-lg px-4"
+            >Przeglądaj książki</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+  </body>
+</html>
