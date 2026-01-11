@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: book-lovers-community
+  datasource:
+    url: jdbc:h2:mem:bookdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update # Automatycznie tworzy tabele na podstawie encji
+    show-sql: true # Pokaże zapytania w konsoli
+  h2:
+    console:
+      enabled: true # Dostęp do bazy przez przeglądarkę
+      path: /h2-console
