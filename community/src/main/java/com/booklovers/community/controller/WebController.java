@@ -7,11 +7,15 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.booklovers.community.dto.BookDto;
 import com.booklovers.community.dto.UserRegisterDto;
 import com.booklovers.community.service.BookService;
+import com.booklovers.community.service.ReviewService;
+import com.booklovers.community.service.ShelfService;
 import com.booklovers.community.service.UserService;
 
 import jakarta.validation.Valid;
@@ -23,6 +27,8 @@ public class WebController {
 
     private final BookService bookService;
     private final UserService userService;
+    private final ShelfService shelfService;
+    private final ReviewService reviewService;
 
     // strona główna
     @GetMapping("/")
@@ -90,6 +96,43 @@ public class WebController {
         model.addAttribute("query", query); // żeby w pasku wyszukiwania został wpisany tekst
         
         return "books";
+    }
+
+    // szczegóły książki
+    @GetMapping("/books/{id}")
+    public String bookDetails(@PathVariable Long id, Model model, java.security.Principal principal) {
+        // książka
+        BookDto book = bookService.getBookById(id);
+        model.addAttribute("book", book);
+
+        // recenzja
+        model.addAttribute("reviews", reviewService.getReviewsForBook(id));
+
+        // półki, jeśli user zalogowany
+        if (principal != null) {
+            model.addAttribute("userShelves", shelfService.getUserShelves(principal.getName()));
+        }
+
+        return "book-details";
+    }
+
+    // dodawanie recenzji
+    @PostMapping("/books/{id}/review")
+    public String addReview(@PathVariable Long id, 
+                            @RequestParam Integer rating, 
+                            @RequestParam String content,
+                            java.security.Principal principal) {
+        reviewService.addReview(id, principal.getName(), rating, content);
+        return "redirect:/books/" + id;
+    }
+
+    // dodawanie do półki
+    @PostMapping("/books/{id}/add-to-shelf")
+    public String addToShelf(@PathVariable Long id, 
+                             @RequestParam Long shelfId,
+                             java.security.Principal principal) {
+        shelfService.addBookToShelf(shelfId, id, principal.getName());
+        return "redirect:/books/" + id + "?added";
     }
 
 }

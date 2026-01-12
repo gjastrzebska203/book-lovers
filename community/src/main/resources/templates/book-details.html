@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <head th:replace="~{fragments/layout :: head('Szczegóły książki')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-5">
+      <div
+        th:if="${param.added}"
+        class="alert alert-success alert-dismissible fade show"
+        role="alert"
+      >
+        Książka została dodana do Twojej półki!
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 text-center">
+          <div
+            class="bg-secondary text-white d-flex align-items-center justify-content-center mx-auto shadow"
+            style="width: 250px; height: 380px; border-radius: 8px"
+          >
+            <i class="fas fa-book fa-5x"></i>
+          </div>
+        </div>
+
+        <div class="col-md-5">
+          <h1 th:text="${book.title}">Tytuł Książki</h1>
+          <h4 class="text-muted" th:text="${book.authorName}">Autor</h4>
+          <p class="text-secondary">
+            ISBN: <span th:text="${book.isbn}"></span>
+          </p>
+
+          <div class="mb-3">
+            <span class="badge bg-warning text-dark fs-5">
+              <i class="fas fa-star"></i>
+              <span
+                th:text="${#numbers.formatDecimal(book.averageRating, 1, 1)}"
+                >8.5</span
+              >
+            </span>
+            <span class="text-muted ms-2">Średnia ocena</span>
+          </div>
+
+          <h5>Opis</h5>
+          <p>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua. (Tutaj
+            powinien być book.description)
+          </p>
+        </div>
+
+        <div class="col-md-3">
+          <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">Akcje</div>
+            <div class="card-body">
+              <div sec:authorize="isAuthenticated()">
+                <p class="card-text">Zarządzaj tą książką:</p>
+
+                <form
+                  th:action="@{'/books/' + ${book.id} + '/add-to-shelf'}"
+                  method="post"
+                  class="mb-3"
+                >
+                  <label class="form-label small">Dodaj na półkę:</label>
+                  <div class="input-group">
+                    <select name="shelfId" class="form-select form-select-sm">
+                      <option
+                        th:each="shelf : ${userShelves}"
+                        th:value="${shelf.id}"
+                        th:text="${shelf.name}"
+                      >
+                        Przeczytane
+                      </option>
+                    </select>
+                    <button class="btn btn-success btn-sm" type="submit">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                </form>
+
+                <hr />
+                <a href="#reviewSection" class="btn btn-outline-primary w-100"
+                  >Napisz recenzję</a
+                >
+              </div>
+
+              <div sec:authorize="!isAuthenticated()">
+                <p class="small text-muted">
+                  Zaloguj się, aby dodawać książki do półek i pisać recenzje.
+                </p>
+                <a href="/login" class="btn btn-primary w-100">Zaloguj się</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-5" id="reviewSection">
+        <div class="col-md-8">
+          <h3>Recenzje czytelników</h3>
+          <hr />
+
+          <div sec:authorize="isAuthenticated()" class="card mb-4 bg-light">
+            <div class="card-body">
+              <h5>Twoja opinia</h5>
+              <form
+                th:action="@{'/books/' + ${book.id} + '/review'}"
+                method="post"
+              >
+                <div class="mb-3">
+                  <label class="form-label">Ocena (1-10)</label>
+                  <select name="rating" class="form-select w-25">
+                    <option value="10">10 - Arcydzieło</option>
+                    <option value="8">8 - Bardzo dobra</option>
+                    <option value="5" selected>5 - Przeciętna</option>
+                    <option value="2">2 - Słaba</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Treść recenzji</label>
+                  <textarea
+                    name="content"
+                    class="form-control"
+                    rows="3"
+                    required
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Opublikuj</button>
+              </form>
+            </div>
+          </div>
+
+          <div th:each="review : ${reviews}" class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <h6
+                  class="card-title fw-bold"
+                  th:text="${review.user != null ? review.user.username : 'Anonim'}"
+                >
+                  User
+                </h6>
+                <span class="badge bg-warning text-dark">
+                  <i class="fas fa-star"></i>
+                  <span th:text="${review.rating}"></span>/10
+                </span>
+              </div>
+              <p class="card-text mt-2" th:text="${review.content}">
+                Treść recenzji...
+              </p>
+              <small
+                class="text-muted"
+                th:text="${#temporals.format(review.createdAt, 'dd-MM-yyyy HH:mm')}"
+                >Data</small
+              >
+            </div>
+          </div>
+
+          <div th:if="${reviews.empty}" class="text-muted">
+            Brak recenzji. Bądź pierwszy!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+  </body>
+</html>
