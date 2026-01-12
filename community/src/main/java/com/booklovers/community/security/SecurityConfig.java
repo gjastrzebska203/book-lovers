@@ -10,7 +10,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.security.config.Customizer.withDefaults;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -58,7 +57,7 @@ public class SecurityConfig {
             
             // konfiguracja wylogowania
             .logout(logout -> logout
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout")) // Pozwala na wylogowanie przez link
+                .logoutUrl("/logout") 
                 .logoutSuccessUrl("/login?logout")
                 .permitAll()
             )

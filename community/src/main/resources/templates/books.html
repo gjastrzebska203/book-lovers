@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Lista Książek')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-4">
+      <div class="row mb-4">
+        <div class="col-md-8">
+          <h2>📚 Biblioteka Społeczności</h2>
+        </div>
+        <div class="col-md-4">
+          <form th:action="@{/books}" method="get" class="d-flex">
+            <input
+              class="form-control me-2"
+              type="search"
+              name="query"
+              placeholder="Tytuł, Autor, ISBN..."
+              th:value="${query}"
+            />
+            <button class="btn btn-outline-primary" type="submit">
+              Szukaj
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm">
+        <div class="card-body p-0">
+          <table class="table table-striped table-hover mb-0">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">Okładka</th>
+                <th scope="col">Tytuł</th>
+                <th scope="col">Autor</th>
+                <th scope="col">ISBN</th>
+                <th scope="col" class="text-center">Ocena</th>
+                <th scope="col" class="text-end">Akcje</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="book : ${books.content}">
+                <td style="width: 80px">
+                  <div
+                    class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                    style="width: 50px; height: 75px; border-radius: 4px"
+                  >
+                    <i class="fas fa-book"></i>
+                  </div>
+                </td>
+                <td class="align-middle fw-bold" th:text="${book.title}">
+                  Wiedźmin
+                </td>
+                <td class="align-middle" th:text="${book.authorName}">
+                  Sapkowski
+                </td>
+                <td class="align-middle" th:text="${book.isbn}">123456</td>
+                <td class="align-middle text-center">
+                  <span class="badge bg-warning text-dark">
+                    <i class="fas fa-star"></i>
+                    <span
+                      th:text="${#numbers.formatDecimal(book.averageRating, 1, 1)}"
+                      >8.5</span
+                    >
+                  </span>
+                </td>
+                <td class="align-middle text-end">
+                  <a
+                    th:href="@{'/books/' + ${book.id}}"
+                    class="btn btn-sm btn-primary"
+                  >
+                    Szczegóły
+                  </a>
+                </td>
+              </tr>
+              <tr th:if="${books.empty}">
+                <td colspan="6" class="text-center py-4">
+                  Brak książek spełniających kryteria.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <nav
+        aria-label="Page navigation"
+        class="mt-4"
+        th:if="${books.totalPages > 1}"
+      >
+        <ul class="pagination justify-content-center">
+          <li class="page-item" th:classappend="${books.first} ? 'disabled'">
+            <a
+              class="page-link"
+              th:href="@{/books(page=${books.number - 1}, query=${query})}"
+              >Poprzednia</a
+            >
+          </li>
+
+          <li
+            class="page-item"
+            th:each="i : ${#numbers.sequence(0, books.totalPages - 1)}"
+            th:classappend="${i == books.number} ? 'active'"
+          >
+            <a
+              class="page-link"
+              th:href="@{/books(page=${i}, query=${query})}"
+              th:text="${i + 1}"
+              >1</a
+            >
+          </li>
+
+          <li class="page-item" th:classappend="${books.last} ? 'disabled'">
+            <a
+              class="page-link"
+              th:href="@{/books(page=${books.number + 1}, query=${query})}"
+              >Następna</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
+  </body>
+</html>

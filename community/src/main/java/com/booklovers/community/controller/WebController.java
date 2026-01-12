@@ -1,13 +1,17 @@
 package com.booklovers.community.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.service.BookService;
 import com.booklovers.community.service.UserService;
 
 import jakarta.validation.Valid;
@@ -16,7 +20,8 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 public class WebController {
-    
+
+    private final BookService bookService;
     private final UserService userService;
 
     // strona główna
@@ -59,6 +64,32 @@ public class WebController {
     @GetMapping("/login")
     public String login() {
         return "login";
+    }
+
+    // lista książek
+    @GetMapping("/books")
+    public String listBooks(
+            @RequestParam(defaultValue = "") String query, // szukana fraza (domyślnie pusta)
+            @RequestParam(defaultValue = "0") int page,    // numer strony (od 0)
+            @RequestParam(defaultValue = "10") int size,   // rozmiar strony
+            Model model) {
+
+        // obiekt paginacji (strona, wielkość)
+        PageRequest pageable = PageRequest.of(page, size);
+        
+        Page<?> bookPage;
+
+        if (query == null || query.isBlank()) {
+            bookPage = bookService.getAllBooks(pageable);
+        } else {
+            bookPage = bookService.searchBooks(query, pageable);
+        }
+        
+        // przekazujemy dane do widoku
+        model.addAttribute("books", bookPage);
+        model.addAttribute("query", query); // żeby w pasku wyszukiwania został wpisany tekst
+        
+        return "books";
     }
 
 }
