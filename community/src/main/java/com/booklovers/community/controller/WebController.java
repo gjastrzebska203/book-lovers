@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dto.BookDto;
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.model.User;
 import com.booklovers.community.service.BookService;
 import com.booklovers.community.service.ReviewService;
 import com.booklovers.community.service.ShelfService;
@@ -133,6 +135,31 @@ public class WebController {
                              java.security.Principal principal) {
         shelfService.addBookToShelf(shelfId, id, principal.getName());
         return "redirect:/books/" + id + "?added";
+    }
+
+    // wyświetlanie profilu
+    @GetMapping("/profile")
+    public String showProfile(Model model, java.security.Principal principal) {
+        String username = principal.getName();
+        User user = userService.findByUsername(username);
+        // dane użytkownika
+        model.addAttribute("user", user);
+        // półki (z książkami)
+        model.addAttribute("shelves", shelfService.getUserShelves(username));
+        // statystyki
+        int booksRead = userService.getBooksReadThisYear(user.getId());
+        model.addAttribute("booksReadYear", booksRead);
+        return "profile";
+    }
+
+    // edycja profilu (post)
+    @PostMapping("/profile/update")
+    public String updateProfile(@RequestParam String bio,
+                                @RequestParam("avatar") MultipartFile avatar,
+                                java.security.Principal principal) {
+        
+        userService.updateUserProfile(principal.getName(), bio, avatar);
+        return "redirect:/profile?updated";
     }
 
 }

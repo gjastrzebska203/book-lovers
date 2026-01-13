@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.booklovers.community.dao.BookStatisticsDao;
 import com.booklovers.community.dto.UserRegisterDto;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
@@ -20,6 +22,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final ShelfRepository shelfRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BookStatisticsDao bookStatisticsDao;
+    private final FileStorageService fileStorageService;
 
     @Transactional
     public User registerUser(UserRegisterDto dto) {
@@ -59,4 +63,32 @@ public class UserService {
             
         shelfRepository.saveAll(shelves);
     }
+
+    // aktualizacja profilu
+    @Transactional
+    public void updateUserProfile(String username, String newBio, MultipartFile avatarFile) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setBio(newBio); // aktualizacja Bio
+        // aktualizacja avatara (jeśli przesłano nowy plik)
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            String fileName = fileStorageService.storeFile(avatarFile);
+            user.setAvatar("/uploads/" + fileName); // Zapisujemy ścieżkę webową
+        }
+
+        userRepository.save(user);
+    }
+
+    // metoda do statystyk
+    public int getBooksReadThisYear(Long userId) {
+        int currentYear = java.time.LocalDate.now().getYear();
+        return bookStatisticsDao.countBooksReadInYear(userId, currentYear);
+    }
+    
+    // metoda pomocnicza do pobrania user
+    public User findByUsername(String username) {
+         return userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
 }
