@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Dodaj Książkę')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-4">
+      <h2>Dodaj / Edytuj Książkę</h2>
+
+      <form
+        th:action="@{/admin/books/save}"
+        th:object="${book}"
+        method="post"
+        class="mt-4 col-md-6"
+      >
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="mb-3">
+          <label>Tytuł</label>
+          <input
+            type="text"
+            th:field="*{title}"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label>ISBN</label>
+          <input type="text" th:field="*{isbn}" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+          <label>Autor</label>
+          <select th:field="*{author}" class="form-select">
+            <option
+              th:each="a : ${authors}"
+              th:value="${a.id}"
+              th:text="${a.firstName + ' ' + a.lastName}"
+            >
+              Sapkowski
+            </option>
+          </select>
+          <div class="form-text">
+            Brak autora? <a href="#">Dodaj go najpierw (TODO)</a>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label>Opis</label>
+          <textarea
+            th:field="*{description}"
+            class="form-control"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-success">Zapisz</button>
+        <a href="/admin/books" class="btn btn-secondary">Anuluj</a>
+      </form>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/layout :: head('Moderacja Użytkowników')}"
+  ></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-4">
+      <h2>Moderacja Użytkowników</h2>
+      <a href="/admin" class="btn btn-outline-secondary mb-3">← Powrót</a>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Login</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="u : ${users}">
+            <td th:text="${u.id}">1</td>
+            <td th:text="${u.username}">Jan</td>
+            <td th:text="${u.email}">jan@o2.pl</td>
+            <td>
+              <span th:if="${u.enabled}" class="badge bg-success">Aktywny</span>
+              <span th:unless="${u.enabled}" class="badge bg-danger"
+                >Zablokowany</span
+              >
+            </td>
+            <td>
+              <a
+                th:if="${u.role != 'ROLE_ADMIN'}"
+                th:href="@{'/admin/users/toggle-block/' + ${u.id}}"
+                class="btn btn-sm"
+                th:classappend="${u.enabled} ? 'btn-danger' : 'btn-success'"
+                th:text="${u.enabled} ? 'Zablokuj' : 'Odblokuj'"
+              >
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

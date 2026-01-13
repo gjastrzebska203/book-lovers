@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Moderacja Recenzji')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-4">
+      <h2>Wszystkie Recenzje</h2>
+      <a href="/admin" class="btn btn-outline-secondary mb-3">← Powrót</a>
+
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Książka</th>
+            <th>Użytkownik</th>
+            <th>Treść</th>
+            <th>Ocena</th>
+            <th>Akcja</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="r : ${reviews}">
+            <td th:text="${r.book.title}">Wiedźmin</td>
+            <td th:text="${r.user != null ? r.user.username : 'Anonim'}">
+              User
+            </td>
+            <td th:text="${r.content}">Super...</td>
+            <td th:text="${r.rating}">5</td>
+            <td>
+              <a
+                th:href="@{'/admin/reviews/delete/' + ${r.id}}"
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Czy na pewno usunąć tę recenzję?')"
+                >Usuń</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

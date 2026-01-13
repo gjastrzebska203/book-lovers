@@ -68,4 +68,23 @@ public class BookService {
                 .averageRating(avgRating != null ? avgRating : 0.0)
                 .build();
     }
+
+    @Transactional
+    public void saveBook(Book book) {
+        bookRepository.save(book);
+    }
+
+    @Transactional
+    public void deleteBook(Long id) {
+        if (!bookRepository.existsById(id)) {
+             throw new ResourceNotFoundException("Nie można usunąć. Książka nie istnieje: " + id);
+        }
+        bookRepository.deleteById(id);
+    }
+
+    public Book findEntityById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Książka nie znaleziona"));
+    }
+
 }

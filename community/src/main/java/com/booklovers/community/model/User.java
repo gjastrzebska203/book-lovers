@@ -49,4 +49,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Review> reviews;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean enabled = true; 
+
 }

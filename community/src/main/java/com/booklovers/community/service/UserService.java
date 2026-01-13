@@ -34,7 +34,7 @@ public class UserService {
             throw new RuntimeException("Email już istnieje!");
         }
 
-        // 1. Tworzenie użytkownika
+        // tworzenie użytkownika
         User user = User.builder()
                 .username(dto.getUsername())
                 .email(dto.getEmail())
@@ -44,7 +44,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        // 2. Tworzenie domyślnych półek (wymaganie specyficzne)
+        // tworzenie domyślnych półek (wymaganie specyficzne)
         createDefaultShelves(savedUser);
 
         return savedUser;
@@ -89,6 +89,21 @@ public class UserService {
     public User findByUsername(String username) {
          return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    // blokowanie/odblokowanie użytkownika
+    @Transactional
+    public void toggleUserBlock(Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        // Odwracamy wartość (true -> false, false -> true)
+        user.setEnabled(!user.isEnabled());
+        userRepository.save(user);
+    }
+    
+    // lista użytkowników
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 
 }

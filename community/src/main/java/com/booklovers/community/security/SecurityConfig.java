@@ -42,6 +42,17 @@ public class SecurityConfig {
                 
                 // swagger i H2 Console
                 .requestMatchers("/h2-console/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // panel admina
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+
+                // REST API: GET dostępne dla wszystkich
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/books/**").permitAll()
+                
+                // REST API: POST, PUT, DELETE tylko dla Admina
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/books/**").hasRole("ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/v1/books/**").hasRole("ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/v1/books/**").hasRole("ADMIN")
                 
                 // wszystkie inne żądania wymagają bycia zalogowanym
                 .anyRequest().authenticated()

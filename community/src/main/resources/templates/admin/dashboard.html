@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head th:replace="~{fragments/layout :: head('Panel Admina')}"></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-5">
+      <h1 class="mb-4">🛠️ Panel Administratora</h1>
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <i class="fas fa-book fa-3x text-primary mb-3"></i>
+              <h3>Książki</h3>
+              <p>Dodawaj, edytuj i usuwaj.</p>
+              <a href="/admin/books" class="btn btn-primary">Zarządzaj</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <i class="fas fa-users fa-3x text-warning mb-3"></i>
+              <h3>Użytkownicy</h3>
+              <p>Blokuj konta trolli.</p>
+              <a href="/admin/users" class="btn btn-warning">Moderuj</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card text-center shadow-sm">
+            <div class="card-body">
+              <i class="fas fa-comments fa-3x text-danger mb-3"></i>
+              <h3>Recenzje</h3>
+              <p>Usuwaj obraźliwe treści.</p>
+              <a href="/admin/reviews" class="btn btn-danger">Przeglądaj</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

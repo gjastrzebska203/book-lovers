@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head
+    th:replace="~{fragments/layout :: head('Zarządzanie Książkami')}"
+  ></head>
+  <body>
+    <nav th:replace="~{fragments/layout :: navigation}"></nav>
+
+    <div class="container mt-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Zarządzanie Książkami</h2>
+        <a href="/admin/books/new" class="btn btn-success"
+          ><i class="fas fa-plus"></i> Dodaj nową</a
+        >
+      </div>
+
+      <table class="table table-hover">
+        <thead class="table-light">
+          <tr>
+            <th>ID</th>
+            <th>Tytuł</th>
+            <th>Autor</th>
+            <th>ISBN</th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="book : ${books.content}">
+            <td th:text="${book.id}">1</td>
+            <td th:text="${book.title}">Wiedźmin</td>
+            <td th:text="${book.authorName}">Sapkowski</td>
+            <td th:text="${book.isbn}">123456</td>
+            <td>
+              <a
+                th:href="@{'/admin/books/edit/' + ${book.id}}"
+                class="btn btn-primary btn-sm"
+              >
+                <i class="fas fa-edit"></i> Edytuj
+              </a>
+
+              <a
+                th:href="@{'/admin/books/delete/' + ${book.id}}"
+                class="btn btn-danger btn-sm"
+                onclick="return confirm('Usunąć książkę trwale?')"
+              >
+                <i class="fas fa-trash"></i> Usuń
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>
