@@ -19,3 +19,16 @@ spring:
   sql:
     init:
       mode: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+  show-actuator: true
+  paths-to-match: /api/**

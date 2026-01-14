@@ -2,6 +2,8 @@ package com.booklovers.community.model;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,11 +41,13 @@ public class Review {
 
     // wiele recenzji -> jedna książka
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     // wiele recenzji -> jeden użytkownik
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "user_id") // może być null jeśli usuniemy usera (anonimizacja)
     private User user;
     

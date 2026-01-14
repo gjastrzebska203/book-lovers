@@ -2,6 +2,8 @@ package com.booklovers.community.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,10 +45,12 @@ public class User {
 
     // jeden użytkownik -> wiele półek
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Shelf> shelves;
 
     // jeden użytkownik -> wiele recenzji
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Review> reviews;
 
     @Builder.Default

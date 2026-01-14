@@ -2,6 +2,8 @@ package com.booklovers.community.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -43,11 +45,13 @@ public class Book {
 
     // relacja N:1 (wiele książek -> jeden autor)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false) // klucz obcy w tabeli books
+    @JoinColumn(name = "author_id", nullable = false)
+    @JsonIgnore // klucz obcy w tabeli books
     private Author author;
 
     // relacja 1:N do Recenzji (jedna książka -> wiele recenzji)
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Review> reviews;
 
 }

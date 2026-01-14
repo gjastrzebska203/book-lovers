@@ -2,6 +2,8 @@ package com.booklovers.community.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,6 +41,7 @@ public class Shelf {
     // wiele półek -> jeden użytkownik
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     // relacja wiele do wielu: półka <-> książki
@@ -49,6 +52,7 @@ public class Shelf {
         joinColumns = @JoinColumn(name = "shelf_id"),
         inverseJoinColumns = @JoinColumn(name = "book_id")
     )
+    @JsonIgnore
     private List<Book> books;
 
 }

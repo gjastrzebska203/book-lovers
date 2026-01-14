@@ -21,49 +21,50 @@ import com.booklovers.community.dto.RatingStatDto;
 import com.booklovers.community.model.Book;
 import com.booklovers.community.service.BookService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/books")
 @RequiredArgsConstructor
+@Tag(name = "Książki", description = "Zarządzanie katalogiem książek i przeglądanie")
 public class BookController {
     
     private final BookService bookService;
 
-    // wymaganie: GET (lista z paginacją)
-    // przykład użycia: GET /api/v1/books?page=0&size=10
+    @Operation(summary = "Pobierz listę książek", description = "Zwraca paginowaną listę wszystkich książek.")
     @GetMapping
     public ResponseEntity<org.springframework.data.domain.Page<BookDto>> getAllBooks(Pageable pageable) {
         return ResponseEntity.ok(bookService.getAllBooks(pageable));
     }
 
-    // wymaganie: GET z parametrem (wyszukiwanie)
-    // przykład użycia: GET /api/v1/books/search?query=Harry
+    @Operation(summary = "Szczegóły książki", description = "Pobiera informacje o książce na podstawie ID.")
     @GetMapping("/search")
     public ResponseEntity<Page<BookDto>> searchBooks(@RequestParam String query, Pageable pageable) {
         return ResponseEntity.ok(bookService.searchBooks(query, pageable));
     }
 
-    // wymaganie: GET (single) + @PathVariable
+    @Operation(summary = "Wyszukiwanie książek", description = "Szuka książek po tytule, autorze lub ISBN.")
     @GetMapping("/{id}")
     public ResponseEntity<BookDto> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookById(id));
     }
 
-    // dodatkowe: statystyki z JdbcTemplate (wykres ocen)
+    @Operation(summary = "Statystyki ocen", description = "Zwraca histogram ocen dla danej książki (dane z JdbcTemplate).")
     @GetMapping("/{id}/stats")
     public ResponseEntity<List<RatingStatDto>> getBookStats(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookRatingStats(id));
     }
 
-    // wymaganie: POST (tworzenie) + @RequestBody + kod 201
+    @Operation(summary = "Dodaj nową książkę", description = "Dostępne tylko dla Administratora.")
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
         bookService.saveBook(book);
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
 
-    // wymaganie: PUT (aktualizacja) + @PathVariable + @RequestBody + kod 200
+    @Operation(summary = "Zaktualizuj książkę", description = "Edycja danych istniejącej książki. Tylko Admin.")
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
         bookDetails.setId(id);
@@ -72,6 +73,7 @@ public class BookController {
         return ResponseEntity.ok(bookDetails);
     }
 
+    @Operation(summary = "Usuń książkę", description = "Trwałe usunięcie książki z bazy. Tylko Admin.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);

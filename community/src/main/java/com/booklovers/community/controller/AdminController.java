@@ -48,7 +48,6 @@ public class AdminController {
     @GetMapping("/books/edit/{id}")
     public String showUpdateBookForm(@PathVariable Long id, Model model) {
         Book book = bookService.findEntityById(id); 
-    
         model.addAttribute("book", book);
         model.addAttribute("authors", authorRepository.findAll());
         return "admin/book-form"; // Reużywamy tego samego formularza
