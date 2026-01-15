@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dao.BookStatisticsDao;
@@ -14,10 +15,15 @@ import com.booklovers.community.model.User;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class UserService {
     private final UserRepository userRepository;
     private final ShelfRepository shelfRepository;
@@ -26,7 +32,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
 
     @Transactional
-    public User registerUser(UserRegisterDto dto) {
+    public User registerUser(@Valid @NotNull UserRegisterDto dto) {
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new RuntimeException("Nazwa użytkownika zajęta!");
         }
@@ -66,7 +72,7 @@ public class UserService {
 
     // aktualizacja profilu
     @Transactional
-    public void updateUserProfile(String username, String newBio, MultipartFile avatarFile) {
+    public void updateUserProfile(@NotBlank String username, @Size(max = 1000) String newBio, MultipartFile avatarFile) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setBio(newBio); // aktualizacja Bio
@@ -80,20 +86,20 @@ public class UserService {
     }
 
     // metoda do statystyk
-    public int getBooksReadThisYear(Long userId) {
+    public int getBooksReadThisYear(@NotNull Long userId) {
         int currentYear = java.time.LocalDate.now().getYear();
         return bookStatisticsDao.countBooksReadInYear(userId, currentYear);
     }
     
     // metoda pomocnicza do pobrania user
-    public User findByUsername(String username) {
+    public User findByUsername(@NotBlank String username) {
          return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     // blokowanie/odblokowanie użytkownika
     @Transactional
-    public void toggleUserBlock(Long userId) {
+    public void toggleUserBlock(@NotNull Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
         // Odwracamy wartość (true -> false, false -> true)

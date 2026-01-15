@@ -12,6 +12,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,12 +31,17 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Imię jest wymagane")
+    @Size(min = 2, max = 50, message = "Imię musi mieć od 2 do 50 znaków")
     @Column(nullable = false)
     private String firstName;
 
+    @NotBlank(message = "Nazwisko jest wymagane")
+    @Size(min = 2, max = 50, message = "Nazwisko musi mieć od 2 do 50 znaków")
     @Column(nullable = false)
     private String lastName;
 
+    @Size(max = 2000, message = "Bio nie może być dłuższe niż 2000 znaków")
     @Column(columnDefinition = "TEXT")
     private String bio;
 

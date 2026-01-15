@@ -3,6 +3,7 @@ package com.booklovers.community.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import com.booklovers.community.model.Book;
 import com.booklovers.community.model.Review;
@@ -12,10 +13,16 @@ import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class ReviewService {
     
     private final ReviewRepository reviewRepository;
@@ -27,7 +34,15 @@ public class ReviewService {
     }
 
     @Transactional
-    public void addReview(Long bookId, String username, Integer rating, String content) {
+    public void addReview(
+        @NotNull Long bookId, 
+        @NotBlank String username, 
+        @NotNull @Min(value = 1) @Max(value = 10) Integer rating, 
+            
+        @NotBlank
+        @Size(max = 4000) 
+        String content) 
+        {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         Book book = bookRepository.findById(bookId)

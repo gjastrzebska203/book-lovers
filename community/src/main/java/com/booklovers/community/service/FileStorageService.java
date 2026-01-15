@@ -8,9 +8,13 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.validation.constraints.NotNull;
+
 @Service
+@Validated
 public class FileStorageService {
     
     private final Path fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
@@ -23,8 +27,11 @@ public class FileStorageService {
         }
     }
 
-    public String storeFile(MultipartFile file) {
-        // unikalna nazwa pliku, żeby uniknąć konfliktów
+    public String storeFile(@NotNull MultipartFile file) {
+        if (file.isEmpty()) {
+            throw new RuntimeException("Nie można zapisać pustego pliku.");
+        }
+        
         String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
 
         try {

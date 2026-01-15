@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import com.booklovers.community.dao.BookStatisticsDao;
 import com.booklovers.community.dto.BookDto;
@@ -15,10 +16,13 @@ import com.booklovers.community.model.Book;
 import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.repository.ReviewRepository;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Validated
 public class BookService {
     private final BookRepository bookRepository;
     private final ReviewRepository reviewRepository;
@@ -70,7 +74,7 @@ public class BookService {
     }
 
     @Transactional
-    public void saveBook(Book book) {
+    public void saveBook(@Valid @NotNull Book book) {
         bookRepository.save(book);
     }
 

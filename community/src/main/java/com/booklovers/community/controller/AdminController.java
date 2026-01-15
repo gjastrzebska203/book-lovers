@@ -3,6 +3,7 @@ package com.booklovers.community.controller;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import com.booklovers.community.service.BookService;
 import com.booklovers.community.service.ReviewService;
 import com.booklovers.community.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -54,7 +56,14 @@ public class AdminController {
     }
 
     @PostMapping("/books/save")
-    public String saveBook(@ModelAttribute Book book) {
+    public String saveBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            // BARDZO WAŻNE: Skoro wracamy do formularza, musimy znowu załadować 
+            // listę autorów do dropdowna, inaczej formularz się wywali (błąd Thymeleaf)
+            model.addAttribute("authors", authorRepository.findAll());
+            // Zwracamy nazwę widoku HTML (nie redirect!), żeby pokazać błędy
+            return "admin/book-form";
+        }
         bookService.saveBook(book);
         return "redirect:/admin/books";
     }
