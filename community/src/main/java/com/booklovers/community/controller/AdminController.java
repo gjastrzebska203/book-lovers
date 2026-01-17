@@ -1,6 +1,9 @@
 package com.booklovers.community.controller;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -96,6 +99,18 @@ public class AdminController {
     public String deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
         return "redirect:/admin/reviews";
+    }
+
+    @GetMapping("/books/export")
+    public ResponseEntity<byte[]> exportBooks() {
+        byte[] csvData = bookService.exportBooksToCsv();
+        
+        String fileName = "ksiazki_export_" + System.currentTimeMillis() + ".csv";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .contentType(MediaType.parseMediaType("text/csv")) // lub application/csv
+                .body(csvData);
     }
 
 }

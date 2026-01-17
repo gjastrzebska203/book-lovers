@@ -1,5 +1,6 @@
 package com.booklovers.community.service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -90,6 +91,26 @@ public class BookService {
     public Book findEntityById(Long id) {
         return bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Książka nie znaleziona"));
+    }
+
+    public byte[] exportBooksToCsv() {
+        List<Book> books = bookRepository.findAll();
+        
+        StringBuilder csvBuilder = new StringBuilder();
+        csvBuilder.append("ID;Tytul;Autor;ISBN;Ocena\n");
+
+        for (Book book : books) {
+            csvBuilder.append(book.getId()).append(";");
+            csvBuilder.append(book.getTitle().replace(";", "")).append(";"); 
+            csvBuilder.append(book.getAuthor().getFirstName())
+                      .append(" ")
+                      .append(book.getAuthor().getLastName()).append(";");
+            csvBuilder.append(book.getIsbn()).append(";");
+            Double avg = reviewRepository.getAverageRatingForBook(book.getId());
+            csvBuilder.append(avg != null ? avg : 0.0).append("\n");
+        }
+        
+        return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
     }
 
 }
