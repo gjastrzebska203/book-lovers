@@ -9,8 +9,6 @@ import com.booklovers.community.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-
-    // metody findBy... (Query Methods)
     Optional<User> findByUsername(String username);
     
     Optional<User> findByEmail(String email);
@@ -18,5 +16,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByUsername(String username);
     
     boolean existsByEmail(String email);
-
 }
