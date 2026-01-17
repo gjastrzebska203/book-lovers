@@ -28,6 +28,8 @@ public class BookDto {
     @Size(max = 255, message = "Ścieżka do okładki jest zbyt długa")
     private String coverImage;
 
+    private String description;
+
     @Min(value = 1, message = "Ocena nie może być mniejsza niż 1")
     @Max(value = 10, message = "Ocena nie może być większa niż 10")
     private Double averageRating; // obliczona średnia

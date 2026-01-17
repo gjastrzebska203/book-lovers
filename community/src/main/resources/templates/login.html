@@ -1,50 +1,121 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{fragments/layout :: head('Logowanie')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
-    <div class="container mt-5">
+    <style>
+      /* 1. Ustawienie Body jako Flex Container na pełną wysokość */
+      body {
+        background-color: #f4f1ea !important; /* Papierowy beż */
+        min-height: 100vh; /* Minimalna wysokość to 100% widoku (viewport height) */
+        display: flex; /* Włączamy Flexbox */
+        flex-direction: column; /* Układamy elementy pionowo (Nav, Content, Footer) */
+      }
+
+      /* 2. Stylizacja głównego kontenera, aby wypychał stopkę */
+      .content-wrapper {
+        flex: 1; /* Ten element zajmie całą dostępną wolną przestrzeń */
+      }
+
+      /* --- Twoje dotychczasowe style --- */
+      .card {
+        border: 1px solid #d6d0c4;
+        border-radius: 4px;
+      }
+      .card-header-text {
+        color: #382110;
+        font-family: "Georgia", serif;
+        font-weight: bold;
+      }
+      .btn-brown {
+        background-color: #382110;
+        color: #ffffff;
+        border: 1px solid #382110;
+        transition: all 0.3s;
+      }
+      .btn-brown:hover {
+        background-color: #5a3b1c;
+        color: #ffffff;
+        border-color: #5a3b1c;
+      }
+      .form-control:focus {
+        border-color: #382110;
+        box-shadow: 0 0 0 0.25rem rgba(56, 33, 16, 0.25);
+      }
+      label {
+        color: #333;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+    </style>
+
+    <div class="container mt-5 content-wrapper">
       <div class="row justify-content-center">
         <div class="col-md-4">
-          <div class="card shadow">
-            <div class="card-body">
-              <h3 class="text-center mb-4">Zaloguj się</h3>
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="text-center mb-4 card-header-text">
+                <i class="fas fa-book-reader me-2"></i>
+                <p>Zaloguj się</p>
+              </h3>
 
-              <div th:if="${param.error}" class="alert alert-danger">
+              <div
+                th:if="${param.error}"
+                class="alert alert-danger text-center font-monospace small"
+              >
                 Błędny login lub hasło.
               </div>
-              <div th:if="${param.success}" class="alert alert-success">
+              <div
+                th:if="${param.success}"
+                class="alert alert-success text-center font-monospace small"
+              >
                 Rejestracja udana! Zaloguj się.
               </div>
 
               <form th:action="@{/login}" method="post">
                 <div class="mb-3">
-                  <label>Użytkownik</label>
+                  <label>Nazwa użytkownika</label>
                   <input
                     type="text"
                     name="username"
                     class="form-control"
+                    placeholder="Wpisz login"
                     required
                   />
                 </div>
-                <div class="mb-3">
+                <div class="mb-4">
                   <label>Hasło</label>
                   <input
                     type="password"
                     name="password"
                     class="form-control"
+                    placeholder="Wpisz hasło"
                     required
                   />
                 </div>
-                <button type="submit" class="btn btn-primary w-100">
+
+                <button type="submit" class="btn btn-brown w-100 py-2 fw-bold">
                   Wejdź
                 </button>
               </form>
+
+              <div class="text-center mt-3">
+                <small class="text-muted"
+                  >Nie masz konta?
+                  <a
+                    href="/register"
+                    style="color: #382110; text-decoration: underline"
+                    >Zarejestruj się</a
+                  ></small
+                >
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <footer th:replace="~{fragments/layout :: footer}"></footer>
   </body>
 </html>

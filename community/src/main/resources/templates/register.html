@@ -1,31 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{fragments/layout :: head('Rejestracja')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
-    <div class="container">
+    <style>
+      /* 1. Flexbox dla Body - podstawa Sticky Footer */
+      body {
+        background-color: #f4f1ea !important;
+        min-height: 100vh; /* Minimalna wysokość ekranu */
+        display: flex; /* Włączamy Flexbox */
+        flex-direction: column; /* Układ pionowy */
+      }
+
+      /* 2. Klasa rozpychająca treść */
+      .content-wrapper {
+        flex: 1; /* Zajmuje całą wolną przestrzeń */
+      }
+
+      .card {
+        border: 1px solid #d6d0c4;
+        border-radius: 4px;
+        background-color: #ffffff;
+      }
+      .gr-header {
+        color: #382110;
+        font-family: "Georgia", serif;
+        font-weight: bold;
+        border-bottom: 1px solid #ebe8d5;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      /* Przycisk */
+      .btn-brown {
+        background-color: #382110;
+        color: #ffffff;
+        border: 1px solid #382110;
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+      .btn-brown:hover {
+        background-color: #5a3b1c;
+        border-color: #5a3b1c;
+        color: #ffffff;
+      }
+      .form-control:focus {
+        border-color: #382110;
+        box-shadow: 0 0 0 0.25rem rgba(56, 33, 16, 0.25);
+      }
+      a.gr-link {
+        color: #382110;
+        text-decoration: underline;
+      }
+      a.gr-link:hover {
+        color: #664d36;
+      }
+    </style>
+
+    <div class="container mt-5 content-wrapper">
       <div class="row justify-content-center">
-        <div class="col-md-6">
-          <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-              <h4 class="mb-0">Rejestracja</h4>
-            </div>
-            <div class="card-body">
+        <div class="col-md-6 col-lg-5">
+          <div class="card shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="gr-header text-center">Zarejestruj się</h3>
+
               <div
                 th:if="${error}"
-                class="alert alert-danger"
+                class="alert alert-danger font-monospace small"
                 th:text="${error}"
               ></div>
 
               <form th:action="@{/register}" th:object="${user}" method="post">
                 <div class="mb-3">
-                  <label class="form-label">Nazwa użytkownika</label>
+                  <label class="form-label fw-bold small text-muted"
+                    >Nazwa użytkownika</label
+                  >
                   <input
                     type="text"
                     class="form-control"
                     th:field="*{username}"
                     th:classappend="${#fields.hasErrors('username')} ? 'is-invalid' : ''"
+                    placeholder="Wybierz unikalny login"
                   />
                   <div
                     class="invalid-feedback"
@@ -35,12 +90,14 @@
                 </div>
 
                 <div class="mb-3">
-                  <label class="form-label">Email</label>
+                  <label class="form-label fw-bold small text-muted"
+                    >Email</label
+                  >
                   <input
-                    type="email"
                     class="form-control"
                     th:field="*{email}"
                     th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                    placeholder="np. jan@example.com"
                   />
                   <div
                     class="invalid-feedback"
@@ -49,13 +106,16 @@
                   ></div>
                 </div>
 
-                <div class="mb-3">
-                  <label class="form-label">Hasło</label>
+                <div class="mb-4">
+                  <label class="form-label fw-bold small text-muted"
+                    >Hasło</label
+                  >
                   <input
                     type="password"
                     class="form-control"
                     th:field="*{password}"
                     th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                    placeholder="Minimum 6 znaków"
                   />
                   <div
                     class="invalid-feedback"
@@ -65,14 +125,18 @@
                 </div>
 
                 <div class="d-grid gap-2">
-                  <button type="submit" class="btn btn-primary">
-                    Zarejestruj się
+                  <button type="submit" class="btn btn-brown py-2">
+                    Utwórz konto
                   </button>
                 </div>
               </form>
-            </div>
-            <div class="card-footer text-center">
-              <small>Masz już konto? <a href="/login">Zaloguj się</a></small>
+
+              <div class="text-center mt-4">
+                <small class="text-muted">
+                  Masz już konto?
+                  <a href="/login" class="gr-link">Zaloguj się</a>
+                </small>
+              </div>
             </div>
           </div>
         </div>

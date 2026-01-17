@@ -2,6 +2,7 @@ package com.booklovers.community.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,6 +43,10 @@ public class SecurityConfig {
                 
                 // swagger i H2 Console
                 .requestMatchers("/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+
+                // 3. KSIĄŻKI - Pozwalamy oglądać (GET) każdemu! <--- TU JEST KLUCZOWA ZMIANA
+                // Używamy HttpMethod.GET, żeby zablokować POST (dodawanie recenzji) dla niezalogowanych
+                .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
 
                 // panel admina
                 .requestMatchers("/admin/**").hasRole("ADMIN")

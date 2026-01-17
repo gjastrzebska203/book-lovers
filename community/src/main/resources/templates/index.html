@@ -1,23 +1,164 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
   <head th:replace="~{fragments/layout :: head('Strona Główna')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
-    <div class="container text-center mt-5">
-      <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
-        <h1 class="display-5 fw-bold">Witaj w Book Lovers Community!</h1>
-        <p class="col-md-8 fs-4 mx-auto">
-          Twój osobisty katalog książek. Dołącz do nas, oceniaj, recenzuj i
-          śledź swoje postępy w czytaniu.
-        </p>
-        <div class="mt-4">
-          <a href="/register" class="btn btn-primary btn-lg px-4 gap-3"
-            >Załóż konto</a
+    <style>
+      /* --- UKŁAD STRONY (Sticky Footer) --- */
+      body {
+        background-color: #f4f1ea !important;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .content-wrapper {
+        flex: 1;
+      }
+
+      /* --- STYLE GOODREADS --- */
+      .hero-title {
+        font-family: "Georgia", serif;
+        color: #382110;
+        font-weight: bold;
+      }
+      .hero-card {
+        background-color: #ffffff;
+        border: 1px solid #d6d0c4;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .btn-brown {
+        background-color: #382110;
+        color: #ffffff;
+        border: 1px solid #382110;
+        font-weight: 600;
+        padding: 10px 25px;
+        transition: all 0.3s;
+      }
+      .btn-brown:hover {
+        background-color: #5a3b1c;
+        border-color: #5a3b1c;
+        color: #ffffff;
+      }
+      .btn-outline-brown {
+        background-color: transparent;
+        color: #382110;
+        border: 1px solid #382110;
+        font-weight: 600;
+        padding: 10px 25px;
+        transition: all 0.3s;
+      }
+      .btn-outline-brown:hover {
+        background-color: #382110;
+        color: #fff;
+      }
+      .feature-icon {
+        color: #382110;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      .feature-title {
+        font-family: "Georgia", serif;
+        color: #382110;
+        font-weight: bold;
+      }
+    </style>
+
+    <div class="container content-wrapper mt-5 mb-5">
+      <div class="hero-card p-5 mb-5">
+        <div class="row align-items-center">
+          <div class="col-lg-7 text-center text-lg-start">
+            <h1 class="display-4 hero-title mb-3">Witaj w Book Lovers!</h1>
+            <p class="fs-5 text-muted mb-4">
+              Twój osobisty świat literatury. Dołącz do społeczności, oceniaj
+              przeczytane tytuły i stwórz swoją wirtualną biblioteczkę marzeń.
+            </p>
+
+            <div
+              class="d-grid gap-2 d-sm-flex justify-content-sm-center justify-content-lg-start"
+            >
+              <a
+                sec:authorize="!isAuthenticated()"
+                href="/register"
+                class="btn btn-brown btn-lg px-4 gap-3"
+              >
+                Załóż konto
+              </a>
+
+              <a
+                sec:authorize="isAuthenticated()"
+                href="/profile"
+                class="btn btn-brown btn-lg px-4 gap-3"
+              >
+                <i class="fas fa-user me-2"></i>Twój Profil
+              </a>
+
+              <a href="/books" class="btn btn-outline-brown btn-lg px-4">
+                Przeglądaj zbiory
+              </a>
+            </div>
+          </div>
+
+          <div class="col-lg-5 text-center mt-4 mt-lg-0">
+            <i
+              class="fas fa-book-open"
+              style="font-size: 150px; color: #ebe8d5"
+            ></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4 py-3 row-cols-1 row-cols-lg-3 text-center">
+        <div class="col">
+          <div
+            class="p-4 h-100 bg-white border rounded shadow-sm"
+            style="border-color: #d6d0c4 !important"
           >
-          <a href="/books" class="btn btn-outline-secondary btn-lg px-4"
-            >Przeglądaj książki</a
+            <div class="feature-icon">
+              <i class="fas fa-star"></i>
+            </div>
+            <h3 class="feature-title fs-4">Oceniaj i Recenzuj</h3>
+            <p class="text-muted">
+              Dziel się opiniami o przeczytanych książkach. Twoje recenzje
+              pomagają innym znaleźć idealną lekturę.
+            </p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div
+            class="p-4 h-100 bg-white border rounded shadow-sm"
+            style="border-color: #d6d0c4 !important"
           >
+            <div class="feature-icon">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h3 class="feature-title fs-4">Twoje Półki</h3>
+            <p class="text-muted">
+              Organizuj książki na wirtualnych półkach: "Przeczytane", "Chcę
+              przeczytać" i "Teraz czytam".
+            </p>
+          </div>
+        </div>
+
+        <div class="col">
+          <div
+            class="p-4 h-100 bg-white border rounded shadow-sm"
+            style="border-color: #d6d0c4 !important"
+          >
+            <div class="feature-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <h3 class="feature-title fs-4">Społeczność</h3>
+            <p class="text-muted">
+              Dołącz do grupy pasjonatów czytania. Sprawdzaj co czytają inni i
+              znajduj nowe inspiracje.
+            </p>
+          </div>
         </div>
       </div>
     </div>

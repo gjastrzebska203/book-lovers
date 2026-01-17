@@ -1,33 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head th:replace="~{fragments/layout :: head('Twój Profil')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
-    <div class="container mt-4">
-      <div class="row align-items-center mb-5">
-        <div class="col-md-2 text-center">
+    <style>
+      /* --- GLOBAL LAYOUT --- */
+      body {
+        background-color: #f4f1ea !important;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: #382110;
+      }
+      .content-wrapper {
+        flex: 1;
+      }
+
+      /* --- TYPOGRAFIA & KOLORY --- */
+      h1,
+      h2,
+      h3,
+      h4,
+      .gr-font {
+        font-family: "Georgia", serif;
+        font-weight: bold;
+        color: #382110;
+      }
+      a {
+        color: #382110;
+        text-decoration: none;
+      }
+      a:hover {
+        color: #5a3b1c;
+        text-decoration: underline;
+      }
+
+      /* --- WIDGET WYZWANIA --- */
+      .challenge-card {
+        background-color: #ffffff;
+        border: 1px solid #d6d0c4;
+        border-top: 5px solid #382110;
+        border-radius: 4px;
+      }
+      .challenge-number {
+        font-family: "Georgia", serif;
+        font-weight: bold;
+        color: #382110;
+      }
+
+      /* --- ZAKŁADKI --- */
+      .nav-tabs {
+        border-bottom: 1px solid #d6d0c4;
+      }
+      .nav-tabs .nav-link {
+        color: #666;
+        border: none;
+        background: transparent;
+        font-weight: 600;
+        padding-bottom: 10px;
+        margin-right: 20px;
+      }
+      .nav-tabs .nav-link:hover {
+        color: #382110;
+      }
+      .nav-tabs .nav-link.active {
+        color: #382110;
+        border-bottom: 3px solid #382110;
+      }
+
+      /* --- STYLE DLA AVATARA --- */
+      .avatar-placeholder {
+        width: 140px;
+        height: 140px;
+        background-color: #eaddcf; /* Beżowy kolor tła */
+        color: #382110; /* Brązowa ikona */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 2px solid #fff;
+      }
+
+      /* --- RESZTA STYLI --- */
+      .book-placeholder {
+        background-color: #eaddcf;
+        color: #8c8177;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        border-radius: 2px;
+      }
+      .shelf-header {
+        border-bottom: 1px solid #d6d0c4;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+      }
+      .btn-brown {
+        background-color: #382110;
+        color: #fff;
+        border: 1px solid #382110;
+      }
+      .btn-brown:hover {
+        background-color: #5a3b1c;
+        color: #fff;
+      }
+      .form-control:focus {
+        border-color: #382110;
+        box-shadow: 0 0 0 0.25rem rgba(56, 33, 16, 0.25);
+      }
+    </style>
+
+    <div class="container content-wrapper mt-5">
+      <div class="row mb-5">
+        <div
+          class="col-md-2 text-center text-md-start mb-3 mb-md-0 d-flex justify-content-center justify-content-md-start"
+        >
           <img
-            th:src="${user.avatar != null ? user.avatar : 'https://via.placeholder.com/150'}"
-            class="rounded-circle img-thumbnail shadow-sm"
-            style="width: 150px; height: 150px; object-fit: cover"
+            th:if="${user.avatar != null && !user.avatar.isEmpty()}"
+            th:src="${user.avatar}"
+            class="rounded-circle border border-2 shadow-sm"
+            style="
+              width: 140px;
+              height: 140px;
+              object-fit: cover;
+              border-color: #fff !important;
+            "
             alt="Avatar"
           />
-        </div>
-        <div class="col-md-7">
-          <h2 th:text="${user.username}">Janusz</h2>
-          <p class="text-muted" th:text="${user.email}">janusz@example.com</p>
-          <p th:text="${user.bio != null ? user.bio : 'Brak opisu...'}">
-            Tu będzie bio
-          </p>
+
+          <div
+            th:unless="${user.avatar != null && !user.avatar.isEmpty()}"
+            class="avatar-placeholder shadow-sm"
+          >
+            <i class="fas fa-user fa-4x"></i>
+          </div>
         </div>
 
-        <div class="col-md-3">
-          <div class="card bg-light border-primary mb-3">
-            <div class="card-header bg-primary text-white">Wyzwanie 2024</div>
-            <div class="card-body text-center">
-              <h1 class="display-4 fw-bold" th:text="${booksReadYear}">0</h1>
-              <p class="card-text small">Przeczytanych książek</p>
+        <div class="col-md-6 pt-2">
+          <h2 th:text="${user.username}" class="mb-1">Nazwa użytkownika</h2>
+          <p class="text-muted small mb-3" th:text="${user.email}">
+            email@example.com
+          </p>
+
+          <div
+            class="p-3 bg-white border rounded"
+            style="border-color: #d6d0c4 !important"
+          >
+            <small
+              class="text-uppercase text-muted fw-bold"
+              style="font-size: 0.7rem"
+              >O mnie</small
+            >
+            <p
+              class="mb-0 mt-1"
+              th:text="${user.bio != null && !user.bio.isEmpty() ? user.bio : 'Ten użytkownik nie dodał jeszcze opisu.'}"
+              style="font-style: italic"
+            >
+              Bio użytkownika...
+            </p>
+          </div>
+        </div>
+
+        <div class="col-md-4 mt-4 mt-md-0">
+          <div class="challenge-card p-3 shadow-sm text-center">
+            <h5 class="text-uppercase fw-bold text-muted small mb-3">
+              Wyzwanie 2024
+            </h5>
+            <div class="d-flex justify-content-center align-items-center gap-3">
+              <i class="fas fa-trophy fa-2x" style="color: #d4a017"></i>
+              <div>
+                <h1
+                  class="display-4 mb-0 challenge-number"
+                  th:text="${booksReadYear}"
+                >
+                  0
+                </h1>
+                <small class="text-muted">przeczytanych książek</small>
+              </div>
+            </div>
+            <div
+              class="progress mt-3"
+              style="height: 6px; background-color: #e9ecef"
+            >
+              <div
+                class="progress-bar"
+                role="progressbar"
+                style="width: 0%; background-color: #382110"
+                th:style="'width: ' + (${booksReadYear} > 0 ? '25%' : '0%')"
+              ></div>
             </div>
           </div>
         </div>
@@ -61,38 +223,50 @@
       <div class="tab-content" id="profileTabsContent">
         <div class="tab-pane fade show active" id="shelves" role="tabpanel">
           <div th:each="shelf : ${shelves}" class="mb-5">
-            <h4 class="border-bottom pb-2 mb-3">
-              <i class="fas fa-layer-group text-primary"></i>
-              <span th:text="${shelf.name}">Przeczytane</span>
-              <span
-                class="badge bg-secondary rounded-pill fs-6"
-                th:text="${shelf.books.size()}"
-                >0</span
-              >
-            </h4>
+            <div
+              class="shelf-header d-flex justify-content-between align-items-center"
+            >
+              <h4 class="mb-0">
+                <span th:text="${shelf.name}">Przeczytane</span>
+                <span
+                  class="text-muted fw-normal ms-2 fs-6"
+                  th:text="'(' + ${shelf.books.size()} + ')'"
+                >
+                  (0)</span
+                >
+              </h4>
+            </div>
 
-            <div class="row row-cols-1 row-cols-md-5 g-4">
+            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
               <div class="col" th:each="book : ${shelf.books}">
-                <div class="card h-100 shadow-sm border-0">
+                <div class="card h-100 border-0 bg-transparent">
                   <a
                     th:href="@{'/books/' + ${book.id}}"
-                    class="text-decoration-none text-dark"
+                    class="text-decoration-none"
                   >
-                    <div
-                      class="bg-secondary text-white d-flex align-items-center justify-content-center card-img-top"
-                      style="height: 200px"
-                    >
-                      <i class="fas fa-book fa-3x"></i>
+                    <div th:if="${book.coverImage != null}" class="shadow-sm">
+                      <img
+                        th:src="${book.coverImage}"
+                        class="img-fluid rounded-1"
+                        alt="Okładka"
+                      />
                     </div>
-                    <div class="card-body p-2 text-center">
+                    <div
+                      th:unless="${book.coverImage != null}"
+                      class="book-placeholder shadow-sm"
+                    >
+                      <i class="fas fa-book fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
                       <h6
-                        class="card-title small fw-bold mb-1"
+                        class="card-title small fw-bold mb-0 text-truncate"
                         th:text="${book.title}"
+                        style="color: #382110"
                       >
                         Tytuł
                       </h6>
                       <p
-                        class="card-text small text-muted"
+                        class="card-text small text-muted text-truncate"
                         th:text="${book.author.lastName}"
                       >
                         Autor
@@ -101,9 +275,12 @@
                   </a>
                 </div>
               </div>
-
-              <div class="col" th:if="${shelf.books.empty}">
-                <p class="text-muted small fst-italic mt-3">Pusta półka...</p>
+              <div class="col-12" th:if="${shelf.books.empty}">
+                <div
+                  class="p-3 text-muted fst-italic bg-light border rounded text-center"
+                >
+                  Brak książek na tej półce.
+                </div>
               </div>
             </div>
           </div>
@@ -111,42 +288,54 @@
 
         <div class="tab-pane fade" id="settings" role="tabpanel">
           <div class="row">
-            <div class="col-md-6">
-              <div class="card">
-                <div class="card-body">
-                  <h5 class="card-title mb-4">Aktualizuj dane</h5>
-
-                  <div th:if="${param.updated}" class="alert alert-success">
-                    Profil zaktualizowany!
+            <div class="col-md-8 col-lg-6">
+              <div
+                class="card border-0 shadow-sm"
+                style="border: 1px solid #d6d0c4 !important"
+              >
+                <div class="card-body p-4">
+                  <h4 class="card-title mb-4 border-bottom pb-2">
+                    Aktualizuj profil
+                  </h4>
+                  <div
+                    th:if="${param.updated}"
+                    class="alert alert-success small"
+                  >
+                    <i class="fas fa-check-circle me-1"></i> Profil został
+                    zaktualizowany!
                   </div>
-
                   <form
                     th:action="@{/profile/update}"
                     method="post"
                     enctype="multipart/form-data"
                   >
                     <div class="mb-3">
-                      <label class="form-label">O mnie (Bio)</label>
+                      <label class="form-label fw-bold small"
+                        >O mnie (Bio)</label
+                      >
                       <textarea
                         name="bio"
                         class="form-control"
                         rows="4"
                         th:text="${user.bio}"
+                        placeholder="Napisz coś o swoich literackich gustach..."
                       ></textarea>
                     </div>
-
-                    <div class="mb-3">
-                      <label class="form-label">Avatar</label>
+                    <div class="mb-4">
+                      <label class="form-label fw-bold small"
+                        >Zmień Avatar</label
+                      >
                       <input
                         type="file"
                         name="avatar"
                         class="form-control"
                         accept="image/*"
                       />
-                      <div class="form-text">Formaty: JPG, PNG.</div>
+                      <div class="form-text small">
+                        Zalecane formaty: JPG, PNG.
+                      </div>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-brown px-4">
                       Zapisz zmiany
                     </button>
                   </form>

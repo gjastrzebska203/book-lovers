@@ -69,6 +69,7 @@ public class BookService {
                 .isbn(book.getIsbn())
                 .coverImage(book.getCoverImage())
                 .authorName(book.getAuthor().getFirstName() + " " + book.getAuthor().getLastName())
+                .description(book.getDescription())
                 .averageRating(avgRating != null ? avgRating : 0.0)
                 .build();
     }
