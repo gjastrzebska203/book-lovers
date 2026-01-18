@@ -1,5 +1,7 @@
 package com.booklovers.community.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,4 +20,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> searchBooks(@Param("query") String query, Pageable pageable);
     
     Page<Book> findAll(Pageable pageable);
+
+    @Query("SELECT b FROM Book b LEFT JOIN b.reviews r GROUP BY b ORDER BY COUNT(r) DESC")
+    List<Book> findMostPopularBooks(Pageable pageable);
 }

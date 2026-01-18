@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -113,4 +114,8 @@ public class BookService {
         return csvBuilder.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    // 6 najpopularniejszych książek
+    public List<Book> getMostPopularBooks() {
+        return bookRepository.findMostPopularBooks(PageRequest.of(0, 6));
+    }
 }

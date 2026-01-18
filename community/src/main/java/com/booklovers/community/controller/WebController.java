@@ -34,8 +34,9 @@ public class WebController {
 
     // strona główna
     @GetMapping("/")
-    public String home() {
-        return "index"; // szuka pliku templates/index.html
+    public String home(Model model) {
+        model.addAttribute("popularBooks", bookService.getMostPopularBooks());
+        return "index";
     }
 
     // formularz rejestracji (GET)
