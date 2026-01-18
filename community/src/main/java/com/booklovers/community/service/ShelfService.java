@@ -51,4 +51,9 @@ public class ShelfService {
         }
     }
     
+    // usuwanie wszystkich półek użytkownika (np. przy usuwaniu konta)
+    @Transactional
+    public void deleteAllByUserId(Long userId) {
+        shelfRepository.deleteAllByUserId(userId);
+    }
 }

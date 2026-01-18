@@ -12,6 +12,7 @@ import com.booklovers.community.dao.BookStatisticsDao;
 import com.booklovers.community.dto.UserRegisterDto;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
+import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
 
@@ -30,6 +31,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final BookStatisticsDao bookStatisticsDao;
     private final FileStorageService fileStorageService;
+    private final ReviewRepository reviewRepository;
 
     @Transactional
     public User registerUser(@Valid @NotNull UserRegisterDto dto) {
@@ -112,4 +114,11 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    // usuwanie z anonimizacją (admin)
+    @Transactional
+    public void deleteUserByAdmin(Long userId) {
+        reviewRepository.anonymizeReviewsByUserId(userId);
+        shelfRepository.deleteAllByUserId(userId);
+        userRepository.deleteById(userId);
+    }
 }

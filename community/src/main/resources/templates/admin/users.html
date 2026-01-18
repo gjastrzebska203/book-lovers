@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
   <head
     th:replace="~{fragments/layout :: head('Moderacja Użytkowników')}"
@@ -8,9 +8,24 @@
 
     <div class="container mt-4">
       <h2>Moderacja Użytkowników</h2>
+
+      <div
+        th:if="${param.deleted}"
+        class="alert alert-warning alert-dismissible fade show"
+        role="alert"
+      >
+        Użytkownik został trwale usunięty, a jego dane zanonimizowane.
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+
       <a href="/admin" class="btn btn-outline-secondary mb-3">← Powrót</a>
 
-      <table class="table">
+      <table class="table align-middle">
         <thead>
           <tr>
             <th>ID</th>
@@ -32,14 +47,36 @@
               >
             </td>
             <td>
-              <a
-                th:if="${u.role != 'ROLE_ADMIN'}"
-                th:href="@{'/admin/users/toggle-block/' + ${u.id}}"
-                class="btn btn-sm"
-                th:classappend="${u.enabled} ? 'btn-danger' : 'btn-success'"
-                th:text="${u.enabled} ? 'Zablokuj' : 'Odblokuj'"
+              <div class="d-flex gap-2" th:if="${u.role != 'ROLE_ADMIN'}">
+                <a
+                  th:href="@{'/admin/users/toggle-block/' + ${u.id}}"
+                  class="btn btn-sm"
+                  th:classappend="${u.enabled} ? 'btn-outline-warning' : 'btn-success'"
+                  th:text="${u.enabled} ? 'Zablokuj' : 'Odblokuj'"
+                >
+                </a>
+
+                <form
+                  th:action="@{'/admin/users/' + ${u.id} + '/delete'}"
+                  method="post"
+                  onsubmit="
+                    return confirm(
+                      'Czy na pewno chcesz trwale usunąć tego użytkownika? \n\nUWAGA: Konto zostanie usunięte, półki wyczyszczone, a recenzje zanonimizowane. Tej operacji nie można cofnąć.',
+                    );
+                  "
+                >
+                  <button type="submit" class="btn btn-sm btn-danger">
+                    Usuń
+                  </button>
+                </form>
+              </div>
+
+              <span
+                th:if="${u.role == 'ROLE_ADMIN'}"
+                class="text-muted fst-italic small"
               >
-              </a>
+                Administrator
+              </span>
             </td>
           </tr>
         </tbody>

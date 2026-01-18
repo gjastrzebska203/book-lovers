@@ -16,4 +16,5 @@ public interface ShelfRepository extends JpaRepository<Shelf, Long> {
     // sprawdź czy użytkownik ma już półkę o takiej nazwie (unikalność nazw półek dla usera)
     boolean existsByNameAndUserId(String name, Long userId);
 
+    void deleteAllByUserId(Long userId);
 }

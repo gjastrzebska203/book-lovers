@@ -113,4 +113,10 @@ public class AdminController {
                 .body(csvData);
     }
 
+    // usuwanie użytkownika
+    @PostMapping("/users/{id}/delete")
+    public String deleteUser(@PathVariable Long id) {
+        userService.deleteUserByAdmin(id);
+        return "redirect:/admin/users?deleted";
+    }
 }
