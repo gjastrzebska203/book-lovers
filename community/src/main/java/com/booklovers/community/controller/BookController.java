@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(name = "Książki", description = "Zarządzanie katalogiem książek i przeglądanie")
 public class BookController {
-    
     private final BookService bookService;
 
     @Operation(summary = "Pobierz listę książek", description = "Zwraca paginowaną listę wszystkich książek.")
@@ -69,7 +68,6 @@ public class BookController {
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
         bookDetails.setId(id);
         bookService.saveBook(bookDetails);
-        
         return ResponseEntity.ok(bookDetails);
     }
 
@@ -79,5 +77,4 @@ public class BookController {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }
-
 }

@@ -26,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/admin")
 @RequiredArgsConstructor
 public class AdminController {
-    
     private final UserService userService;
     private final BookService bookService;
     private final ReviewService reviewService;
@@ -55,16 +54,13 @@ public class AdminController {
         Book book = bookService.findEntityById(id); 
         model.addAttribute("book", book);
         model.addAttribute("authors", authorRepository.findAll());
-        return "admin/book-form"; // Reużywamy tego samego formularza
+        return "admin/book-form"; 
     }
 
     @PostMapping("/books/save")
     public String saveBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
         if (result.hasErrors()) {
-            // BARDZO WAŻNE: Skoro wracamy do formularza, musimy znowu załadować 
-            // listę autorów do dropdowna, inaczej formularz się wywali (błąd Thymeleaf)
             model.addAttribute("authors", authorRepository.findAll());
-            // Zwracamy nazwę widoku HTML (nie redirect!), żeby pokazać błędy
             return "admin/book-form";
         }
         bookService.saveBook(book);
@@ -104,16 +100,13 @@ public class AdminController {
     @GetMapping("/books/export")
     public ResponseEntity<byte[]> exportBooks() {
         byte[] csvData = bookService.exportBooksToCsv();
-        
         String fileName = "ksiazki_export_" + System.currentTimeMillis() + ".csv";
-
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
-                .contentType(MediaType.parseMediaType("text/csv")) // lub application/csv
+                .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csvData);
     }
 
-    // usuwanie użytkownika
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id) {
         userService.deleteUserByAdmin(id);

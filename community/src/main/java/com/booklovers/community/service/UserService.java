@@ -9,12 +9,17 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dao.BookStatisticsDao;
+import com.booklovers.community.dto.UserBackupDto;
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.model.Book;
+import com.booklovers.community.model.Review;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
 import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -120,5 +125,48 @@ public class UserService {
         reviewRepository.anonymizeReviewsByUserId(userId);
         shelfRepository.deleteAllByUserId(userId);
         userRepository.deleteById(userId);
+    }
+
+    // generowanie JSON
+    public byte[] generateProfileBackup(String username) {
+        try {
+            User user = findByUsername(username);
+            
+            List<Shelf> shelves = shelfRepository.findAllByUserId(user.getId());
+            List<Review> reviews = reviewRepository.findAllByUserId(user.getId());
+
+            List<UserBackupDto.ShelfBackupDto> shelvesDto = shelves.stream()
+                .map(s -> UserBackupDto.ShelfBackupDto.builder()
+                        .name(s.getName())
+                        .books(s.getBooks().stream().map(Book::getTitle).toList())
+                        .build())
+                .toList();
+
+            List<UserBackupDto.ReviewBackupDto> reviewsDto = reviews.stream()
+                .map(r -> UserBackupDto.ReviewBackupDto.builder()
+                        .bookTitle(r.getBook().getTitle())
+                        .rating(r.getRating())
+                        .content(r.getContent())
+                        .createdAt(r.getCreatedAt() != null ? r.getCreatedAt().toString() : "")
+                        .build())
+                .toList();
+
+            UserBackupDto backupDto = UserBackupDto.builder()
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .bio(user.getBio())
+                    .joinDate(user.getCreatedAt() != null ? user.getCreatedAt().toString() : "")
+                    .shelves(shelvesDto)
+                    .reviews(reviewsDto)
+                    .build();
+
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule()); 
+            
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsBytes(backupDto);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Błąd podczas generowania backupu", e);
+        }
     }
 }

@@ -21,12 +21,9 @@ public class AuthController {
     
     private final UserService userService;
 
-    // wymaganie: POST (tworzenie), @RequestBody, ResponseEntity z kodem 201
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegisterDto registerDto) {
         User registeredUser = userService.registerUser(registerDto);
-        
-        // zwracamy 201 Created i ID utworzonego użytkownika
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Użytkownik utworzony. ID: " + registeredUser.getId());
     }

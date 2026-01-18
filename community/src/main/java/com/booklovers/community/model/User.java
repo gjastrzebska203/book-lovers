@@ -1,7 +1,10 @@
 package com.booklovers.community.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -72,4 +75,7 @@ public class User {
     @Column(nullable = false)
     private boolean enabled = true; 
 
+    @CreationTimestamp 
+    @Column(updatable = false) 
+    private LocalDateTime createdAt;
 }

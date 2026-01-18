@@ -23,4 +23,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Modifying
     @Query("UPDATE Review r SET r.user = NULL WHERE r.user.id = :userId")
     void anonymizeReviewsByUserId(@Param("userId") Long userId);
+
+    List<Review> findAllByUserId(Long userId);
 }

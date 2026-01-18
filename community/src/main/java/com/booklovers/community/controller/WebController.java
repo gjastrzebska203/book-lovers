@@ -2,6 +2,9 @@ package com.booklovers.community.controller;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -161,6 +164,19 @@ public class WebController {
         
         userService.updateUserProfile(principal.getName(), bio, avatar);
         return "redirect:/profile?updated";
+    }
+
+    @GetMapping("/profile/export")
+    public ResponseEntity<byte[]> exportProfile(java.security.Principal principal) {
+        String username = principal.getName();
+        byte[] fileContent = userService.generateProfileBackup(username);
+
+        String filename = "backup_" + username + ".json";
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(fileContent);
     }
 
 }
