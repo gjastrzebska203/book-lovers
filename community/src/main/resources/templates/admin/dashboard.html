@@ -4,42 +4,170 @@
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
-    <div class="container mt-5">
-      <h1 class="mb-4">🛠️ Panel Administratora</h1>
-      <div class="row">
-        <div class="col-md-4">
-          <div class="card text-center shadow-sm">
+    <style>
+      /* --- GLOBALNE STYLE (Goodreads vibe) --- */
+      body {
+        background-color: #f4f1ea !important;
+        min-height: 100vh;
+        color: #382110;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      }
+
+      /* --- NAGŁÓWKI --- */
+      h1,
+      h2,
+      h3,
+      h4,
+      .gr-font {
+        font-family: "Georgia", serif;
+        font-weight: bold;
+        color: #382110;
+      }
+
+      /* --- KARTY PANELU --- */
+      .admin-card {
+        background-color: #ffffff;
+        border: 1px solid #d6d0c4;
+        border-radius: 4px;
+        transition:
+          transform 0.2s ease-in-out,
+          box-shadow 0.2s ease-in-out;
+        height: 100%;
+      }
+      .admin-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(56, 33, 16, 0.1);
+        border-color: #382110;
+      }
+      .card-icon {
+        color: #382110;
+        margin-bottom: 1.5rem;
+        opacity: 0.8;
+      }
+
+      /* --- PRZYCISKI --- */
+      .btn-brown {
+        background-color: #382110;
+        color: #ffffff;
+        border: 1px solid #382110;
+        font-weight: 600;
+        padding: 8px 20px;
+        transition: all 0.3s;
+      }
+      .btn-brown:hover {
+        background-color: #5a3b1c;
+        border-color: #5a3b1c;
+        color: #ffffff;
+      }
+
+      /* --- LINKI POWROTU --- */
+      .breadcrumb-link {
+        color: #666;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .breadcrumb-link:hover {
+        color: #382110;
+        text-decoration: underline;
+      }
+    </style>
+
+    <div class="container mt-5 mb-5">
+      <div
+        class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom"
+        style="border-color: #d6d0c4 !important"
+      >
+        <div>
+          <h1 class="mb-0">Panel Administratora</h1>
+          <p class="text-muted mt-1 mb-0">
+            Zarządzaj treścią i społecznością Book Lovers.
+          </p>
+        </div>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        <div class="col">
+          <div class="card admin-card text-center p-4">
             <div class="card-body">
-              <i class="fas fa-book fa-3x text-primary mb-3"></i>
-              <h3>Książki</h3>
-              <p>Dodawaj, edytuj i usuwaj.</p>
-              <a href="/admin/books" class="btn btn-primary">Zarządzaj</a>
+              <div class="card-icon">
+                <i class="fas fa-book fa-3x"></i>
+              </div>
+              <h4 class="card-title mb-3">Książki</h4>
+              <p class="card-text text-muted small mb-4">
+                Dodawaj nowe tytuły, edytuj opisy i zarządzaj okładkami.
+              </p>
+              <a href="/admin/books" class="btn btn-brown w-100">Zarządzaj</a>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="card text-center shadow-sm">
+
+        <div class="col">
+          <div class="card admin-card text-center p-4">
             <div class="card-body">
-              <i class="fas fa-users fa-3x text-warning mb-3"></i>
-              <h3>Użytkownicy</h3>
-              <p>Blokuj konta trolli.</p>
-              <a href="/admin/users" class="btn btn-warning">Moderuj</a>
+              <div class="card-icon">
+                <i class="fas fa-pen-nib fa-3x"></i>
+              </div>
+              <h4 class="card-title mb-3">Autorzy</h4>
+              <p class="card-text text-muted small mb-4">
+                Twórz profile autorów i edytuj ich dane osobowe.
+              </p>
+              <a href="/admin/authors" class="btn btn-brown w-100">Zarządzaj</a>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="card text-center shadow-sm">
+
+        <div class="col">
+          <div class="card admin-card text-center p-4">
             <div class="card-body">
-              <i class="fas fa-comments fa-3x text-danger mb-3"></i>
-              <h3>Recenzje</h3>
-              <p>Usuwaj obraźliwe treści.</p>
-              <a href="/admin/reviews" class="btn btn-danger">Przeglądaj</a>
+              <div class="card-icon">
+                <i class="fas fa-users fa-3x"></i>
+              </div>
+              <h4 class="card-title mb-3">Użytkownicy</h4>
+              <p class="card-text text-muted small mb-4">
+                Przeglądaj listę czytelników, blokuj i usuwaj konta.
+              </p>
+              <a href="/admin/users" class="btn btn-brown w-100">Moderuj</a>
             </div>
           </div>
         </div>
-        <a href="/admin/authors" class="btn btn-outline-brown ms-2"
-          >Zarządzaj Autorami</a
-        >
+
+        <div class="col">
+          <div class="card admin-card text-center p-4">
+            <div class="card-body">
+              <div class="card-icon">
+                <i class="fas fa-comments fa-3x"></i>
+              </div>
+              <h4 class="card-title mb-3">Recenzje</h4>
+              <p class="card-text text-muted small mb-4">
+                Monitoruj opinie i usuwaj obraźliwe lub spamerskie treści.
+              </p>
+              <a href="/admin/reviews" class="btn btn-brown w-100"
+                >Przeglądaj</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="mt-5 p-4 bg-white border rounded"
+        style="border-color: #d6d0c4 !important"
+      >
+        <h5 class="gr-font mb-3">Szybki status systemu</h5>
+        <div class="d-flex gap-4 text-muted small">
+          <span
+            ><i class="fas fa-check-circle text-success me-1"></i> Baza danych:
+            <strong>Online</strong></span
+          >
+          <span
+            ><i class="fas fa-shield-alt text-success me-1"></i> Zabezpieczenia:
+            <strong>Aktywne</strong></span
+          >
+          <span
+            ><i class="fas fa-server text-success me-1"></i> Wersja:
+            <strong>1.0.0</strong></span
+          >
+        </div>
       </div>
     </div>
   </body>
