@@ -1,6 +1,7 @@
 package com.booklovers.community.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,4 +18,6 @@ public interface ShelfRepository extends JpaRepository<Shelf, Long> {
     boolean existsByNameAndUserId(String name, Long userId);
 
     void deleteAllByUserId(Long userId);
+
+    Optional<Shelf> findByNameAndUserId(String name, Long userId);
 }

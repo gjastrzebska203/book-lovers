@@ -56,4 +56,27 @@ public class ShelfService {
     public void deleteAllByUserId(Long userId) {
         shelfRepository.deleteAllByUserId(userId);
     }
+
+    @Transactional
+    public void createShelf(@NotBlank String shelfName, @NotBlank String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Sprawdzamy, czy półka już istnieje (ignorując wielkość liter)
+        // Wymaga, aby w ShelfRepository była metoda findByNameAndUserId (dodaliśmy ją przy Imporcie)
+        // Jeśli jej nie masz, dodaj: Optional<Shelf> findByNameAndUserId(String name, Long userId);
+        boolean exists = shelfRepository.findByNameAndUserId(shelfName, user.getId()).isPresent();
+        
+        if (exists) {
+            throw new RuntimeException("Masz już półkę o takiej nazwie.");
+        }
+
+        Shelf shelf = new Shelf();
+        shelf.setName(shelfName);
+        shelf.setUser(user);
+        // Pusta lista książek na start
+        shelf.setBooks(new java.util.ArrayList<>());
+
+        shelfRepository.save(shelf);
+    }
 }

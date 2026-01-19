@@ -179,4 +179,16 @@ public class WebController {
                 .body(fileContent);
     }
 
+    @PostMapping("/profile/shelves/create")
+    public String createShelf(@RequestParam String shelfName, 
+                              java.security.Principal principal,
+                              Model model) {
+        try {
+            shelfService.createShelf(shelfName, principal.getName());
+            return "redirect:/profile?shelfCreated";
+        } catch (RuntimeException e) {
+            // Przekazujemy błąd w parametrze URL, aby wyświetlić go w widoku
+            return "redirect:/profile?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
 }
