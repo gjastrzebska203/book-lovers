@@ -1,8 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head
-    th:replace="~{fragments/layout :: head('Dodaj / Edytuj Książkę')}"
-  ></head>
+  <head th:replace="~{fragments/layout :: head('Edycja Autora')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
@@ -38,28 +36,13 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
       }
-      .form-control,
-      .form-select {
+      .form-control {
         border-color: #d6d0c4;
         padding: 10px;
       }
-      .form-control:focus,
-      .form-select:focus {
+      .form-control:focus {
         border-color: #382110;
         box-shadow: 0 0 0 0.2rem rgba(56, 33, 16, 0.15); /* Brązowa poświata */
-      }
-      .form-text {
-        color: #8c8177;
-        font-size: 0.8rem;
-      }
-
-      /* Linki wewnątrz formularza */
-      .link-brown {
-        color: #382110;
-        text-decoration: underline;
-      }
-      .link-brown:hover {
-        color: #5a3b1c;
       }
 
       /* --- BUTTONS --- */
@@ -89,10 +72,6 @@
         border-color: #382110;
         color: #382110;
       }
-
-      .hover-underline:hover {
-        text-decoration: underline !important;
-      }
     </style>
 
     <div class="container mt-5 mb-5 flex-grow-1">
@@ -100,10 +79,10 @@
         <div class="col-md-6 col-lg-5">
           <div class="mb-3">
             <a
-              href="/admin/books"
+              href="/admin/authors"
               class="text-decoration-none small text-muted hover-underline"
             >
-              <i class="fas fa-arrow-left me-1"></i> Wróć do listy książek
+              <i class="fas fa-arrow-left me-1"></i> Wróć do listy
             </a>
           </div>
 
@@ -117,78 +96,49 @@
                       style="color: #f4f1ea"
                     ></i>
                     <i
-                      class="fas fa-book fa-stack-1x"
+                      class="fas fa-pen-nib fa-stack-1x"
                       style="color: #382110"
                     ></i>
                   </span>
                 </div>
                 <h3
                   class="gr-font mb-1"
-                  th:text="${book.id == null ? 'Dodaj Książkę' : 'Edytuj Książkę'}"
+                  th:text="${author.id == null ? 'Dodaj Autora' : 'Edytuj Autora'}"
                 >
-                  Książka
+                  Autor
                 </h3>
                 <p class="text-muted small">
-                  Wypełnij szczegóły, aby zaktualizować biblioteczkę.
+                  Uzupełnij dane autora, aby dodać go do bazy.
                 </p>
               </div>
 
               <form
-                th:action="@{/admin/books/save}"
-                th:object="${book}"
+                th:action="@{/admin/authors/save}"
+                th:object="${author}"
                 method="post"
               >
                 <input type="hidden" th:field="*{id}" />
 
                 <div class="mb-3">
-                  <label class="form-label fw-bold">Tytuł</label>
+                  <label class="form-label fw-bold">Imię</label>
                   <input
                     type="text"
-                    th:field="*{title}"
+                    th:field="*{firstName}"
                     class="form-control"
-                    placeholder="Wpisz tytuł książki"
+                    placeholder="Np. J.K."
                     required
                   />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label fw-bold">ISBN</label>
-                  <input
-                    type="text"
-                    th:field="*{isbn}"
-                    class="form-control"
-                    placeholder="Np. 978-3-16-148410-0"
-                    required
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label fw-bold">Autor</label>
-                  <select th:field="*{author}" class="form-select">
-                    <option
-                      th:each="a : ${authors}"
-                      th:value="${a.id}"
-                      th:text="${a.firstName + ' ' + a.lastName}"
-                    >
-                      Wybierz autora...
-                    </option>
-                  </select>
-                  <div class="form-text mt-2">
-                    Nie widzisz autora?
-                    <a href="/admin/authors/new" class="link-brown"
-                      >Dodaj go najpierw</a
-                    >.
-                  </div>
                 </div>
 
                 <div class="mb-4">
-                  <label class="form-label fw-bold">Opis</label>
-                  <textarea
-                    th:field="*{description}"
+                  <label class="form-label fw-bold">Nazwisko</label>
+                  <input
+                    type="text"
+                    th:field="*{lastName}"
                     class="form-control"
-                    rows="4"
-                    placeholder="Krótki opis fabuły..."
-                  ></textarea>
+                    placeholder="Np. Rowling"
+                    required
+                  />
                 </div>
 
                 <div class="d-grid gap-3 pt-2">
@@ -197,10 +147,10 @@
                     class="btn btn-brown btn-lg"
                     style="font-size: 1rem"
                   >
-                    <i class="fas fa-save me-2"></i>Zapisz Książkę
+                    <i class="fas fa-save me-2"></i>Zapisz
                   </button>
                   <a
-                    href="/admin/books"
+                    href="/admin/authors"
                     class="btn btn-outline-brown text-center"
                   >
                     Anuluj

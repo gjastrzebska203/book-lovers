@@ -23,4 +23,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT b FROM Book b LEFT JOIN b.reviews r GROUP BY b ORDER BY COUNT(r) DESC")
     List<Book> findMostPopularBooks(Pageable pageable);
+
+    boolean existsByAuthorId(Long authorId);
 }

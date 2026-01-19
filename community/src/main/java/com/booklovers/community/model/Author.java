@@ -17,7 +17,9 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "authors")
@@ -48,6 +50,8 @@ public class Author {
     // jeden autor -> wiele książek
     // "author" to nazwa pola w klasie Book
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @ToString.Exclude // <--- DODAJ TO!
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     private List<Book> books;
     

@@ -22,7 +22,9 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "books")
@@ -57,6 +59,8 @@ public class Book {
     @NotNull(message = "Autor jest wymagany")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
+    @ToString.Exclude // <--- DODAJ TO! Przerywa pętlę toString
+    @EqualsAndHashCode.Exclude
     @JsonIgnore // klucz obcy w tabeli books
     private Author author;
 

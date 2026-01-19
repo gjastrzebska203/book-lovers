@@ -1,8 +1,6 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org">
-  <head
-    th:replace="~{fragments/layout :: head('Zarządzanie Książkami')}"
-  ></head>
+  <head th:replace="~{fragments/layout :: head('Zarządzanie Autorami')}"></head>
   <body>
     <nav th:replace="~{fragments/layout :: navigation}"></nav>
 
@@ -50,10 +48,10 @@
       .table-card {
         border: 1px solid #d6d0c4;
         border-radius: 4px;
-        overflow: hidden;
+        overflow: hidden; /* Zaokrągla rogi tabeli */
       }
       .custom-table thead {
-        background-color: #eaddcf;
+        background-color: #eaddcf; /* Ciepły beż nagłówka */
       }
       .custom-table th {
         color: #382110;
@@ -70,14 +68,7 @@
         padding: 12px 24px;
       }
       .custom-table tbody tr:hover {
-        background-color: #fff9f0;
-      }
-
-      /* Dodatkowy styl dla ISBN */
-      .isbn-text {
-        font-family: "Courier New", monospace;
-        letter-spacing: 1px;
-        font-size: 0.9em;
+        background-color: #fff9f0; /* Bardzo jasny beż przy najechaniu */
       }
     </style>
 
@@ -86,15 +77,10 @@
         class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom"
         style="border-color: #d6d0c4 !important"
       >
-        <h2 class="gr-font mb-0">Zarządzanie Książkami</h2>
-        <div class="d-flex gap-2">
-          <a href="/admin/books/export" class="btn btn-outline-brown shadow-sm">
-            <i class="fas fa-file-csv me-2"></i>Eksportuj CSV
-          </a>
-          <a href="/admin/books/new" class="btn btn-brown shadow-sm">
-            <i class="fas fa-plus me-2"></i>Dodaj Książkę
-          </a>
-        </div>
+        <h2 class="gr-font mb-0">Zarządzanie Autorami</h2>
+        <a href="/admin/authors/new" class="btn btn-brown shadow-sm">
+          <i class="fas fa-plus me-2"></i>Dodaj Autora
+        </a>
       </div>
 
       <div
@@ -102,7 +88,8 @@
         class="alert alert-success alert-dismissible fade show shadow-sm"
         role="alert"
       >
-        <i class="fas fa-check-circle me-2"></i>Operacja zakończona sukcesem.
+        <i class="fas fa-check-circle me-2"></i>Zmiany zostały zapisane
+        pomyślnie.
         <button
           type="button"
           class="btn-close"
@@ -115,7 +102,21 @@
         class="alert alert-success alert-dismissible fade show shadow-sm"
         role="alert"
       >
-        <i class="fas fa-trash-alt me-2"></i>Książka została usunięta.
+        <i class="fas fa-trash-alt me-2"></i>Autor został usunięty.
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div
+        th:if="${param.error}"
+        class="alert alert-danger alert-dismissible fade show shadow-sm"
+        role="alert"
+      >
+        <i class="fas fa-exclamation-circle me-2"></i
+        ><span th:text="${param.error}">Błąd</span>
         <button
           type="button"
           class="btn-close"
@@ -130,66 +131,74 @@
             <table class="table custom-table mb-0">
               <thead>
                 <tr>
-                  <th class="ps-4" style="width: 60px">ID</th>
-                  <th>Tytuł</th>
-                  <th>Autor</th>
-                  <th>ISBN</th>
-                  <th class="text-end pe-4" style="width: 150px">Akcje</th>
+                  <th class="ps-4" style="width: 80px">ID</th>
+                  <th>Imię</th>
+                  <th>Nazwisko</th>
+                  <th class="text-end pe-4" style="width: 200px">Akcje</th>
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="book : ${books.content}">
-                  <td class="ps-4 fw-bold text-muted" th:text="${book.id}">
+                <tr th:each="author : ${authors}">
+                  <td class="ps-4 fw-bold text-muted" th:text="${author.id}">
                     1
                   </td>
-
                   <td
-                    th:text="${book.title}"
+                    th:text="${author.firstName}"
                     class="fw-bold"
                     style="color: #382110"
                   >
-                    Wiedźmin
+                    John
                   </td>
-
-                  <td th:text="${book.authorName}">Sapkowski</td>
-
-                  <td class="isbn-text text-muted" th:text="${book.isbn}">
-                    123456
+                  <td
+                    th:text="${author.lastName}"
+                    class="fw-bold"
+                    style="color: #382110"
+                  >
+                    Doe
                   </td>
-
                   <td class="text-end pe-4">
                     <div class="btn-group" role="group">
                       <a
-                        th:href="@{'/admin/books/edit/' + ${book.id}}"
+                        th:href="@{'/admin/authors/edit/' + ${author.id}}"
                         class="btn btn-sm btn-outline-brown"
                         title="Edytuj"
                       >
                         <i class="fas fa-edit"></i>
                       </a>
 
-                      <a
-                        th:href="@{'/admin/books/delete/' + ${book.id}}"
-                        class="btn btn-sm btn-outline-danger ms-1"
-                        onclick="return confirm('Usunąć książkę trwale?');"
-                        title="Usuń"
+                      <form
+                        th:action="@{'/admin/authors/delete/' + ${author.id}}"
+                        method="post"
+                        style="display: inline"
+                        onsubmit="
+                          return confirm(
+                            'Czy na pewno chcesz usunąć tego autora?',
+                          );
+                        "
                       >
-                        <i class="fas fa-trash-alt"></i>
-                      </a>
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger ms-1"
+                          title="Usuń"
+                        >
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+                      </form>
                     </div>
                   </td>
                 </tr>
 
-                <tr th:if="${books.content.empty}">
-                  <td colspan="5" class="text-center py-5 text-muted">
+                <tr th:if="${authors.empty}">
+                  <td colspan="4" class="text-center py-5 text-muted">
                     <i
-                      class="fas fa-book-open fa-3x mb-3"
+                      class="fas fa-feather-alt fa-3x mb-3"
                       style="color: #d6d0c4"
                     ></i>
-                    <p class="mb-0">Brak książek w bazie danych.</p>
+                    <p class="mb-0">Brak autorów w bazie danych.</p>
                     <a
-                      href="/admin/books/new"
+                      href="/admin/authors/new"
                       class="small text-decoration-none"
-                      >Dodaj pierwszą książkę</a
+                      >Dodaj pierwszego autora</a
                     >
                   </td>
                 </tr>
