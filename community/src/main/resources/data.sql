@@ -14,7 +14,10 @@ INSERT INTO books (id, title, isbn, description, author_id, cover_image) VALUES
 (6, 'Hobbit, czyli tam i z powrotem', '978-83-244-0400-9', 'Wyprawa Bilbo Bagginsa.', 3, NULL),
 (7, 'Władca Pierścieni: Drużyna Pierścienia', '978-83-244-0401-6', 'Początek wielkiej wojny o pierścień.', 3, NULL);
 
--- Opcjonalnie: Zresetowanie liczników auto-inkrementacji (dla H2), 
--- aby kolejne dodawane przez aplikację rekordy miały dobre ID.
+INSERT INTO users (id, email, enabled, password, role, username) VALUES 
+(1, 'admin@test.pl', TRUE, '$2a$10$phHEaJ1eMVhnBnxEW7dBbuREznWsPihxxMzb/3hR4iHorTIUdalJy', 'ROLE_ADMIN', 'admin'),
+(2, 'user@test.pl', TRUE, '$2a$10$539KKiPbjOHaotKik/JQAuL4w2GVhIB.R9w5BL3xFb3x4QdYRuNeS', 'ROLE_USER', 'user');
+
 ALTER TABLE authors ALTER COLUMN id RESTART WITH 4;
 ALTER TABLE books ALTER COLUMN id RESTART WITH 8;
+ALTER TABLE users ALTER COLUMN id RESTART WITH 3;
