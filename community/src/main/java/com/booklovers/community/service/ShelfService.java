@@ -36,8 +36,7 @@ public class ShelfService {
     public void addBookToShelf(@NotNull Long shelfId, @NotNull Long bookId, @NotBlank String username) {
         Shelf shelf = shelfRepository.findById(shelfId)
                 .orElseThrow(() -> new RuntimeException("Półka nie istnieje"));
-        
-        // zy ta półka należy do tego użytkownika?
+
         if (!shelf.getUser().getUsername().equals(username)) {
             throw new RuntimeException("Nie masz dostępu do tej półki");
         }
@@ -62,9 +61,6 @@ public class ShelfService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Sprawdzamy, czy półka już istnieje (ignorując wielkość liter)
-        // Wymaga, aby w ShelfRepository była metoda findByNameAndUserId (dodaliśmy ją przy Imporcie)
-        // Jeśli jej nie masz, dodaj: Optional<Shelf> findByNameAndUserId(String name, Long userId);
         boolean exists = shelfRepository.findByNameAndUserId(shelfName, user.getId()).isPresent();
         
         if (exists) {
@@ -74,9 +70,34 @@ public class ShelfService {
         Shelf shelf = new Shelf();
         shelf.setName(shelfName);
         shelf.setUser(user);
-        // Pusta lista książek na start
         shelf.setBooks(new java.util.ArrayList<>());
-
         shelfRepository.save(shelf);
+    }
+
+    @Transactional
+    public void removeBookFromShelf(@NotNull Long shelfId, @NotNull Long bookId, @NotBlank String username) {
+        Shelf shelf = getShelfAndValidateOwner(shelfId, username);
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new RuntimeException("Książka nie istnieje"));
+
+        if (shelf.getBooks().contains(book)) {
+            shelf.getBooks().remove(book);
+            shelfRepository.save(shelf);
+        }
+    }
+
+    @Transactional
+    public void moveBook(@NotNull Long sourceShelfId, @NotNull Long targetShelfId, @NotNull Long bookId, @NotBlank String username) {
+        removeBookFromShelf(sourceShelfId, bookId, username);
+        addBookToShelf(targetShelfId, bookId, username);
+    }
+
+    private Shelf getShelfAndValidateOwner(Long shelfId, String username) {
+        Shelf shelf = shelfRepository.findById(shelfId)
+                .orElseThrow(() -> new RuntimeException("Półka nie istnieje"));
+        if (!shelf.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("Nie masz dostępu do tej półki");
+        }
+        return shelf;
     }
 }

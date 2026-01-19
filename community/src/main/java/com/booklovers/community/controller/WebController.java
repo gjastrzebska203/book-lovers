@@ -187,8 +187,24 @@ public class WebController {
             shelfService.createShelf(shelfName, principal.getName());
             return "redirect:/profile?shelfCreated";
         } catch (RuntimeException e) {
-            // Przekazujemy błąd w parametrze URL, aby wyświetlić go w widoku
             return "redirect:/profile?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
         }
+    }
+
+    @PostMapping("/profile/shelves/{shelfId}/remove")
+    public String removeBookFromShelf(@PathVariable Long shelfId, 
+                                      @RequestParam Long bookId,
+                                      java.security.Principal principal) {
+        shelfService.removeBookFromShelf(shelfId, bookId, principal.getName());
+        return "redirect:/profile";
+    }
+
+    @PostMapping("/profile/shelves/{shelfId}/move")
+    public String moveBook(@PathVariable Long shelfId, 
+                           @RequestParam Long bookId,
+                           @RequestParam Long targetShelfId,
+                           java.security.Principal principal) {
+        shelfService.moveBook(shelfId, targetShelfId, bookId, principal.getName());
+        return "redirect:/profile";
     }
 }

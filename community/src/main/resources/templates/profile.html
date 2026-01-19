@@ -89,7 +89,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 200px;
+        height: 180px; /* Dopasowane do kart */
         border-radius: 2px;
       }
       .shelf-header {
@@ -104,6 +104,16 @@
       }
       .btn-brown:hover {
         background-color: #5a3b1c;
+        color: #fff;
+      }
+      /* Dodany styl dla przycisku Przenieś */
+      .btn-outline-brown {
+        color: #382110;
+        border-color: #382110;
+        background-color: transparent;
+      }
+      .btn-outline-brown:hover {
+        background-color: #382110;
         color: #fff;
       }
       .form-control:focus {
@@ -281,6 +291,7 @@
               aria-label="Close"
             ></button>
           </div>
+
           <div th:each="shelf : ${shelves}" class="mb-5">
             <div
               class="shelf-header d-flex justify-content-between align-items-center"
@@ -298,25 +309,33 @@
 
             <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3">
               <div class="col" th:each="book : ${shelf.books}">
-                <div class="card h-100 border-0 bg-transparent">
+                <div
+                  class="card h-100 border-0 shadow-sm"
+                  style="background-color: #fff"
+                >
                   <a
                     th:href="@{'/books/' + ${book.id}}"
-                    class="text-decoration-none"
+                    class="text-decoration-none text-dark"
                   >
-                    <div th:if="${book.coverImage != null}" class="shadow-sm">
+                    <div
+                      th:if="${book.coverImage != null}"
+                      class="position-relative"
+                    >
                       <img
                         th:src="${book.coverImage}"
-                        class="img-fluid rounded-1"
+                        class="card-img-top"
+                        style="height: 180px; object-fit: cover"
                         alt="Okładka"
                       />
                     </div>
                     <div
                       th:unless="${book.coverImage != null}"
-                      class="book-placeholder shadow-sm"
+                      class="book-placeholder card-img-top"
+                      style="height: 180px"
                     >
                       <i class="fas fa-book fa-2x"></i>
                     </div>
-                    <div class="mt-2">
+                    <div class="card-body p-2">
                       <h6
                         class="card-title small fw-bold mb-0 text-truncate"
                         th:text="${book.title}"
@@ -332,8 +351,85 @@
                       </p>
                     </div>
                   </a>
+
+                  <div class="card-footer bg-white border-top-0 p-2 pt-0">
+                    <div
+                      class="d-flex justify-content-between align-items-center gap-1"
+                    >
+                      <div class="dropdown flex-grow-1">
+                        <button
+                          class="btn btn-sm btn-outline-brown w-100 dropdown-toggle py-0"
+                          style="font-size: 0.75rem"
+                          type="button"
+                          data-bs-toggle="dropdown"
+                        >
+                          Przenieś
+                        </button>
+                        <ul
+                          class="dropdown-menu shadow border-0"
+                          style="min-width: 200px; z-index: 1050"
+                        >
+                          <li>
+                            <h6 class="dropdown-header small">
+                              Wybierz półkę docelową:
+                            </h6>
+                          </li>
+                          <li
+                            th:each="targetShelf : ${shelves}"
+                            th:if="${targetShelf.id != shelf.id}"
+                          >
+                            <form
+                              th:action="@{'/profile/shelves/' + ${shelf.id} + '/move'}"
+                              method="post"
+                            >
+                              <input
+                                type="hidden"
+                                name="bookId"
+                                th:value="${book.id}"
+                              />
+                              <input
+                                type="hidden"
+                                name="targetShelfId"
+                                th:value="${targetShelf.id}"
+                              />
+                              <button type="submit" class="dropdown-item small">
+                                <i class="fas fa-folder me-2 text-muted"></i>
+                                <span th:text="${targetShelf.name}">Nazwa</span>
+                              </button>
+                            </form>
+                          </li>
+                          <li
+                            th:if="${shelves.size() <= 1}"
+                            class="dropdown-item small text-muted fst-italic"
+                          >
+                            Brak innych półek
+                          </li>
+                        </ul>
+                      </div>
+
+                      <form
+                        th:action="@{'/profile/shelves/' + ${shelf.id} + '/remove'}"
+                        method="post"
+                        onsubmit="return confirm('Usunąć tę książkę z półki?');"
+                      >
+                        <input
+                          type="hidden"
+                          name="bookId"
+                          th:value="${book.id}"
+                        />
+                        <button
+                          type="submit"
+                          class="btn btn-sm text-danger px-2 py-0"
+                          title="Usuń z półki"
+                        >
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
                 </div>
               </div>
+
               <div class="col-12" th:if="${shelf.books.empty}">
                 <div
                   class="p-3 text-muted fst-italic bg-light border rounded text-center"
