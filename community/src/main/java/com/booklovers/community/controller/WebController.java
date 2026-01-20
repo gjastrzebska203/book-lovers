@@ -113,6 +113,7 @@ public class WebController {
 
         // recenzja
         model.addAttribute("reviews", reviewService.getReviewsForBook(id));
+        model.addAttribute("stats", bookService.getBookStatistics(id));
 
         // półki, jeśli user zalogowany
         if (principal != null) {

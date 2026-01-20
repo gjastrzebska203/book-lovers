@@ -218,7 +218,96 @@
               Opis książki...
             </p>
           </div>
+          <div
+            class="card mb-4 border-0 shadow-sm"
+            style="background-color: #faf9f6"
+          >
+            <div class="card-body">
+              <h5 class="gr-font mb-4 border-bottom pb-2">
+                Statystyki Społeczności
+              </h5>
 
+              <div class="row align-items-center text-center text-md-start">
+                <div class="col-md-4 mb-4 mb-md-0 border-end-md">
+                  <div
+                    class="display-4 fw-bold text-dark"
+                    th:text="${stats.averageRating}"
+                  >
+                    7.5
+                  </div>
+
+                  <div
+                    class="text-warning mb-2"
+                    style="font-size: 0.8rem; letter-spacing: -1px"
+                  >
+                    <span th:each="i : ${#numbers.sequence(1, 10)}">
+                      <i
+                        th:class="${i <= stats.averageRating} ? 'fas fa-star' : 'far fa-star'"
+                      ></i>
+                    </span>
+                  </div>
+
+                  <div class="small text-muted mt-2">
+                    <div class="mb-1">
+                      <i class="fas fa-pen-nib me-1"></i>
+                      <strong th:text="${stats.ratingCount}">120</strong>
+                      recenzji
+                    </div>
+                    <div>
+                      <i class="fas fa-user-check me-1"></i>
+                      <strong th:text="${stats.readerCount}">350</strong>
+                      czytelników
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-md-8">
+                  <div
+                    th:each="star : ${#numbers.sequence(10, 1, -1)}"
+                    class="d-flex align-items-center mb-1"
+                    style="line-height: 1"
+                  >
+                    <div
+                      class="small text-muted me-2 text-end"
+                      style="width: 35px; font-size: 0.75rem"
+                      th:text="${star}"
+                    >
+                      10
+                    </div>
+                    <div class="small text-warning me-2">
+                      <i class="fas fa-star" style="font-size: 0.7rem"></i>
+                    </div>
+
+                    <div
+                      class="progress flex-grow-1"
+                      style="
+                        height: 6px;
+                        background-color: #e9ecef;
+                        border-radius: 2px;
+                      "
+                    >
+                      <div
+                        class="progress-bar"
+                        role="progressbar"
+                        th:style="'width: ' + ${stats.getPercentage(star)} + '%; background-color: #ffc107;'"
+                        th:aria-valuenow="${stats.getPercentage(star)}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                      ></div>
+                    </div>
+
+                    <div
+                      class="small text-muted ms-2 text-end"
+                      style="width: 40px; font-size: 0.75rem"
+                      th:text="${stats.ratingDistribution.get(star)}"
+                    >
+                      10
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div id="reviewSection">
             <h4
               class="mb-4 border-bottom pb-2"

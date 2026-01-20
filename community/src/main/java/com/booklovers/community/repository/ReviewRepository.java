@@ -25,4 +25,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     void anonymizeReviewsByUserId(@Param("userId") Long userId);
 
     List<Review> findAllByUserId(Long userId);
+
+    @Query("SELECT r.rating, COUNT(r) FROM Review r WHERE r.book.id = :bookId GROUP BY r.rating")
+    List<Object[]> getRatingDistribution(@Param("bookId") Long bookId);
+
+    long countByBookId(Long bookId);
 }

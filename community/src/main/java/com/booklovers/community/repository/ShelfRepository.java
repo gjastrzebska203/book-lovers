@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.booklovers.community.model.Shelf;
@@ -20,4 +22,7 @@ public interface ShelfRepository extends JpaRepository<Shelf, Long> {
     void deleteAllByUserId(Long userId);
 
     Optional<Shelf> findByNameAndUserId(String name, Long userId);
+
+    @Query("SELECT COUNT(s) FROM Shelf s JOIN s.books b WHERE b.id = :bookId")
+    long countReadersByBookId(@Param("bookId") Long bookId);
 }
