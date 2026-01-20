@@ -176,8 +176,9 @@
         <div class="col-md-4 mt-4 mt-md-0">
           <div class="challenge-card p-3 shadow-sm text-center">
             <h5 class="text-uppercase fw-bold text-muted small mb-3">
-              Wyzwanie 2024
+              Wyzwanie <span th:text="${currentYear}">2026</span>
             </h5>
+
             <div class="d-flex justify-content-center align-items-center gap-3">
               <i class="fas fa-trophy fa-2x" style="color: #d4a017"></i>
               <div>
@@ -187,24 +188,37 @@
                 >
                   0
                 </h1>
-                <small class="text-muted">przeczytanych książek</small>
+
+                <small class="text-muted">
+                  z <span th:text="${challengeTarget}">52</span> książek
+                </small>
               </div>
             </div>
+
             <div
               class="progress mt-3"
-              style="height: 6px; background-color: #e9ecef"
+              style="
+                height: 10px;
+                background-color: #e9ecef;
+                border-radius: 5px;
+              "
             >
               <div
                 class="progress-bar"
                 role="progressbar"
-                style="width: 0%; background-color: #382110"
-                th:style="'width: ' + (${booksReadYear} > 0 ? '25%' : '0%')"
+                th:style="'width: ' + ${challengeProgress} + '%; background-color: #382110;'"
+                th:aria-valuenow="${booksReadYear}"
+                aria-valuemin="0"
+                th:aria-valuemax="${challengeTarget}"
               ></div>
+            </div>
+
+            <div class="mt-2 small text-muted fw-bold">
+              <span th:text="${challengeProgress}">0</span>% ukończono
             </div>
           </div>
         </div>
       </div>
-
       <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
         <li class="nav-item">
           <button

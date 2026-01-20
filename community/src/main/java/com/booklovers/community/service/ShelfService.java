@@ -100,4 +100,13 @@ public class ShelfService {
         }
         return shelf;
     }
+
+    public int getBooksReadCount(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return shelfRepository.findByNameAndUserId("Przeczytane", user.getId())
+                .map(shelf -> shelf.getBooks().size())
+                .orElse(0);
+    }
 }

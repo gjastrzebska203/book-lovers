@@ -1,5 +1,7 @@
 package com.booklovers.community.controller;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dto.BookDto;
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
 import com.booklovers.community.service.BookService;
 import com.booklovers.community.service.ReviewService;
@@ -144,16 +147,25 @@ public class WebController {
 
     // wyświetlanie profilu
     @GetMapping("/profile")
-    public String showProfile(Model model, java.security.Principal principal) {
+    public String profile(Model model, java.security.Principal principal) {
         String username = principal.getName();
         User user = userService.findByUsername(username);
-        // dane użytkownika
+        List<Shelf> shelves = shelfService.getUserShelves(username);
+        
+        int readCount = shelfService.getBooksReadCount(username);
+        int challengeTarget = 52;
+        
+        int progressPercent = (challengeTarget > 0) ? (int)((double)readCount / challengeTarget * 100) : 0;
+        if (progressPercent > 100) progressPercent = 100;
+
         model.addAttribute("user", user);
-        // półki (z książkami)
-        model.addAttribute("shelves", shelfService.getUserShelves(username));
-        // statystyki
-        int booksRead = userService.getBooksReadThisYear(user.getId());
-        model.addAttribute("booksReadYear", booksRead);
+        model.addAttribute("shelves", shelves);
+        
+        model.addAttribute("booksReadYear", readCount);
+        model.addAttribute("challengeTarget", challengeTarget);
+        model.addAttribute("challengeProgress", progressPercent);
+        model.addAttribute("currentYear", java.time.Year.now().getValue());
+
         return "profile";
     }
 
