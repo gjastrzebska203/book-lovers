@@ -513,7 +513,7 @@
 
               <hr class="my-5" style="border-color: #d6d0c4" />
 
-              <div
+              <!-- <div
                 class="card border-0 shadow-sm mb-4"
                 style="border: 1px solid #d6d0c4 !important"
               >
@@ -530,7 +530,47 @@
                   <a href="/profile/export" class="btn btn-brown px-4">
                     <i class="fas fa-download me-2"></i>Pobierz Backup (JSON)
                   </a>
+                </div> -->
+
+                <div class="card border-0 shadow-sm mb-4" style="border: 1px solid #d6d0c4 !important">
+                <div class="card-body p-4">
+                  <h4 class="card-title mb-3 gr-font">
+                    <i class="fas fa-database me-2 text-muted"></i>Backup i Dane
+                  </h4>
+
+                  <div th:if="${param.imported}" class="alert alert-success small">
+                      <i class="fas fa-check-circle me-1"></i> Biblioteczka została pomyślnie zaimportowana!
+                  </div>
+
+                  <div class="row g-4 mt-2">
+                      <div class="col-md-6 border-end" style="border-color: #eee !important;">
+                          <h6 class="fw-bold mb-2 text-muted small text-uppercase">Eksport</h6>
+                          <p class="card-text text-muted small mb-3">
+                            Pobierz plik JSON ze swoją historią czytania i recenzjami.
+                          </p>
+                          <a href="/profile/export" class="btn btn-brown w-100">
+                              <i class="fas fa-download me-2"></i>Pobierz Backup
+                          </a>
+                      </div>
+
+                      <div class="col-md-6">
+                          <h6 class="fw-bold mb-2 text-muted small text-uppercase">Import</h6>
+                          <p class="card-text text-muted small mb-3">
+                            Wgraj plik JSON, aby odtworzyć półki. Książki nieistniejące w bazie zostaną pominięte.
+                          </p>
+                          
+                          <form th:action="@{/profile/import}" method="post" enctype="multipart/form-data">
+                              <div class="input-group input-group-sm mb-2">
+                                  <input type="file" name="file" class="form-control" accept=".json" required>
+                              </div>
+                              <button type="submit" class="btn btn-outline-brown w-100 btn-sm">
+                                  <i class="fas fa-upload me-2"></i>Wgraj i Odtwórz
+                              </button>
+                          </form>
+                      </div>
+                  </div>
                 </div>
+              </div>
               </div>
 
               <div

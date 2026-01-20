@@ -220,4 +220,21 @@ public class WebController {
         shelfService.moveBook(shelfId, targetShelfId, bookId, principal.getName());
         return "redirect:/profile";
     }
+
+    // ...
+
+    @PostMapping("/profile/import")
+    public String importProfile(@RequestParam("file") MultipartFile file,
+                                java.security.Principal principal) {
+        try {
+            if (file.isEmpty()) {
+                throw new RuntimeException("Nie wybrano pliku.");
+            }
+            userService.importProfile(principal.getName(), file);
+            return "redirect:/profile?imported=true";
+        } catch (Exception e) {
+            // Przekazujemy błąd w URL
+            return "redirect:/profile?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
 }

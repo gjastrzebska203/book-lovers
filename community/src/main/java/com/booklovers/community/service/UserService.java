@@ -1,5 +1,6 @@
 package com.booklovers.community.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +16,7 @@ import com.booklovers.community.model.Book;
 import com.booklovers.community.model.Review;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
+import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
@@ -37,6 +39,7 @@ public class UserService {
     private final BookStatisticsDao bookStatisticsDao;
     private final FileStorageService fileStorageService;
     private final ReviewRepository reviewRepository;
+    private final BookRepository bookRepository;
 
     @Transactional
     public User registerUser(@Valid @NotNull UserRegisterDto dto) {
@@ -167,6 +170,50 @@ public class UserService {
 
         } catch (Exception e) {
             throw new RuntimeException("Błąd podczas generowania backupu", e);
+        }
+    }
+
+    @Transactional
+    public void importProfile(String username, MultipartFile file) {
+        try {
+            User user = findByUsername(username);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+
+            UserBackupDto backup = mapper.readValue(file.getInputStream(), UserBackupDto.class);
+
+            if (backup.getShelves() != null) {
+                for (UserBackupDto.ShelfBackupDto shelfDto : backup.getShelves()) {
+                    
+                    // 1. Znajdź istniejącą półkę lub stwórz nową (jeśli to np. półka niestandardowa)
+                    Shelf shelf = shelfRepository.findByNameAndUserId(shelfDto.getName(), user.getId())
+                            .orElseGet(() -> {
+                                Shelf newShelf = new Shelf();
+                                newShelf.setName(shelfDto.getName());
+                                newShelf.setUser(user);
+                                newShelf.setBooks(new ArrayList<>());
+                                return shelfRepository.save(newShelf);
+                            });
+
+                    // 2. Iterujemy po tytułach książek z pliku JSON
+                    for (String bookTitle : shelfDto.getBooks()) {
+                        
+                        // WALIDACJA: Szukamy książki w bazie po tytule
+                        bookRepository.findByTitle(bookTitle).ifPresent(book -> {
+                            // Wykona się TYLKO jeśli książka istnieje w bazie
+                            
+                            // Sprawdzamy, czy książki już nie ma na półce (unikamy duplikatów)
+                            if (!shelf.getBooks().contains(book)) {
+                                shelf.getBooks().add(book);
+                            }
+                        });
+                        // Jeśli książka nie istnieje -> ifPresent się nie wykona -> pomijamy ją milcząco
+                    }
+                    shelfRepository.save(shelf);
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Błąd podczas importu danych: " + e.getMessage(), e);
         }
     }
 }

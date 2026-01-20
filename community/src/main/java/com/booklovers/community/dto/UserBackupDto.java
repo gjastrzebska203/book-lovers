@@ -2,11 +2,15 @@ package com.booklovers.community.dto;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserBackupDto {
     private String username;
     private String email;
@@ -17,6 +21,8 @@ public class UserBackupDto {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ShelfBackupDto {
         private String name;
         private List<String> books;
@@ -24,6 +30,8 @@ public class UserBackupDto {
 
     @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class ReviewBackupDto {
         private String bookTitle;
         private Integer rating;

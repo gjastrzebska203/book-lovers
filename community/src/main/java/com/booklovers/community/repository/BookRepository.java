@@ -1,6 +1,7 @@
 package com.booklovers.community.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +26,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findMostPopularBooks(Pageable pageable);
 
     boolean existsByAuthorId(Long authorId);
+
+    Optional<Book> findByTitle(String title);
 }
