@@ -27,6 +27,7 @@ import com.booklovers.community.model.Author;
 import com.booklovers.community.model.Book;
 import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.repository.ReviewRepository;
+import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,9 @@ public class BookServiceTest {
 
     @Mock
     private BookStatisticsDao bookStatisticsDao;
+
+    @Mock
+    private ShelfRepository shelfRepository;
 
     @InjectMocks
     private BookService bookService;
@@ -167,5 +171,135 @@ public class BookServiceTest {
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getTitle()).isEqualTo("Wiedźmin");
         assertThat(result.getContent().get(0).getAverageRating()).isEqualTo(0.0);
+    }
+
+    // pobieranie wszystkich książek (paginacja)
+    @Test
+    void shouldReturnAllBooksPageMappedToDto() {
+        // given
+        PageRequest pageable = PageRequest.of(0, 5);
+        Author author = Author.builder().firstName("Test").lastName("Author").build();
+        Book book = Book.builder().id(1L).title("Book 1").author(author).build();
+        Page<Book> bookPage = new PageImpl<>(List.of(book));
+
+        when(bookRepository.findAll(pageable)).thenReturn(bookPage);
+
+        // when
+        Page<BookDto> result = bookService.getAllBooks(pageable);
+
+        // then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getTitle()).isEqualTo("Book 1");
+        verify(bookRepository).findAll(pageable);
+    }
+
+    // zapis książki
+    @Test
+    void shouldSaveBook() {
+        // given
+        Book book = new Book();
+        book.setTitle("New Book");
+
+        // when
+        bookService.saveBook(book);
+
+        // then
+        verify(bookRepository).save(book);
+    }
+
+    // pobieranie encji (nie DTO) - sukces
+    @Test
+    void shouldReturnBookEntityById() {
+        // given
+        Long id = 1L;
+        Book book = new Book();
+        when(bookRepository.findById(id)).thenReturn(Optional.of(book));
+
+        // when
+        Book result = bookService.findEntityById(id);
+
+        // then
+        assertThat(result).isEqualTo(book);
+    }
+
+    // pobieranie encji - błąd (nie znaleziono)
+    @Test
+    void shouldThrowExceptionWhenEntityNotFound() {
+        // given
+        Long id = 99L;
+        when(bookRepository.findById(id)).thenReturn(Optional.empty());
+
+        // when
+        Throwable thrown = catchThrowable(() -> bookService.findEntityById(id));
+
+        // then
+        assertThat(thrown).isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    // najpopularniejsze książki
+    @Test
+    void shouldReturnMostPopularBooks() {
+        // given
+        PageRequest pageRequest = PageRequest.of(0, 6);
+        List<Book> books = List.of(new Book(), new Book());
+        when(bookRepository.findMostPopularBooks(pageRequest)).thenReturn(books);
+
+        // when
+        List<Book> result = bookService.getMostPopularBooks();
+
+        // then
+        assertThat(result).hasSize(2);
+        verify(bookRepository).findMostPopularBooks(pageRequest);
+    }
+
+    // statystyki książki (Dobre dane)
+    @Test
+    void shouldReturnCorrectBookStatistics() {
+        // given
+        Long bookId = 1L;
+        
+        when(reviewRepository.getAverageRatingForBook(bookId)).thenReturn(4.5);
+        
+        when(reviewRepository.countByBookId(bookId)).thenReturn(100L);
+        when(shelfRepository.countReadersByBookId(bookId)).thenReturn(50L);
+        
+        List<Object[]> histogram = List.of(
+            new Object[]{5, 2L}, // Ocena 5, 2 głosy
+            new Object[]{1, 1L}  // Ocena 1, 1 głos
+        );
+        when(reviewRepository.getRatingDistribution(bookId)).thenReturn(histogram);
+
+        // when
+        var stats = bookService.getBookStatistics(bookId);
+
+        // then
+        assertThat(stats.getAverageRating()).isEqualTo(4.5);
+        assertThat(stats.getRatingCount()).isEqualTo(100L);
+        assertThat(stats.getReaderCount()).isEqualTo(50L);
+        
+        // Sprawdzanie mapy rozkładu
+        assertThat(stats.getRatingDistribution().get(5)).isEqualTo(2L);
+        assertThat(stats.getRatingDistribution().get(1)).isEqualTo(1L);
+        assertThat(stats.getRatingDistribution().get(3)).isEqualTo(0L); 
+    }
+
+    // statystyki książki (brak danych / wartości null)
+    @Test
+    void shouldHandleNullValuesInStatistics() {
+        // given
+        Long bookId = 2L;
+
+        when(reviewRepository.getAverageRatingForBook(bookId)).thenReturn(null); // Brak ocen
+        when(reviewRepository.countByBookId(bookId)).thenReturn(0L);
+        when(shelfRepository.countReadersByBookId(bookId)).thenReturn(0L);
+        when(reviewRepository.getRatingDistribution(bookId)).thenReturn(List.of()); // Pusty histogram
+
+        // when
+        var stats = bookService.getBookStatistics(bookId);
+
+        // then
+        assertThat(stats.getAverageRating()).isEqualTo(0.0);
+        assertThat(stats.getRatingCount()).isEqualTo(0L);
+        assertThat(stats.getRatingDistribution()).hasSize(10); 
     }
 }

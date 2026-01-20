@@ -151,4 +151,31 @@ public class ReviewServiceTest {
         // then
         verify(reviewRepository).deleteById(reviewId);
     }
+
+    // test błędu zapisu (np. błąd bazy danych)
+    @Test
+    void shouldThrowExceptionWhenDatabaseFailsToSaveReview() {
+        // given
+        Long bookId = 1L;
+        String username = "user";
+        Integer rating = 5;
+        String content = "Tekst";
+
+        User user = new User();
+        Book book = new Book();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+        
+        when(reviewRepository.save(any(Review.class))).thenThrow(new RuntimeException("DB Error"));
+
+        // when
+        Throwable thrown = catchThrowable(() -> 
+            reviewService.addReview(bookId, username, rating, content)
+        );
+
+        // then
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessage("DB Error");
+    }
 }

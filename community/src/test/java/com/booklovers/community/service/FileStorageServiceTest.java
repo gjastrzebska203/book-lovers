@@ -99,4 +99,38 @@ public class FileStorageServiceTest {
         assertThat(thrown).isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("Błąd zapisu pliku");
     }
+
+    // test przypadku, gdy oryginalna nazwa pliku to null (np. specyficzny klient API)
+    @Test
+    void shouldStoreFileWhenOriginalFilenameIsNull() throws IOException {
+        // given
+        byte[] content = "content".getBytes();
+        when(multipartFile.isEmpty()).thenReturn(false);
+        when(multipartFile.getOriginalFilename()).thenReturn(null);
+        when(multipartFile.getInputStream()).thenReturn(new ByteArrayInputStream(content));
+
+        // when
+        createdFileName = fileStorageService.storeFile(multipartFile);
+
+        // then
+        assertThat(createdFileName).isNotNull();
+        assertThat(createdFileName).endsWith("_null");
+        
+        Path savedPath = Paths.get("uploads").resolve(createdFileName);
+        assertTrue(Files.exists(savedPath));
+        assertThat(Files.readAllBytes(savedPath)).isEqualTo(content);
+    }
+
+    // test przekazania null jako argumentu (Fail-fast)
+    @Test
+    void shouldThrowNullPointerExceptionWhenInputIsNull() {
+        // given
+        MultipartFile nullFile = null;
+
+        // when
+        Throwable thrown = catchThrowable(() -> fileStorageService.storeFile(nullFile));
+
+        // then
+        assertThat(thrown).isInstanceOf(NullPointerException.class);
+    }
 }

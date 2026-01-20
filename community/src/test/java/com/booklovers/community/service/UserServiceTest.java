@@ -5,9 +5,14 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,8 +27,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dao.BookStatisticsDao;
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.model.Book;
+import com.booklovers.community.model.Review;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
+import com.booklovers.community.repository.BookRepository;
+import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
 
@@ -40,6 +49,10 @@ public class UserServiceTest {
     private FileStorageService fileStorageService;
     @Mock
     private BookStatisticsDao bookStatisticsDao;
+    @Mock
+    private ReviewRepository reviewRepository;
+    @Mock
+    private BookRepository bookRepository;
 
     @InjectMocks
     private UserService userService;
@@ -217,5 +230,147 @@ public class UserServiceTest {
         // then
         assertThat(thrown).isInstanceOf(RuntimeException.class)
                 .hasMessage("User not found");
+    }
+
+    // lista wszystkich użytkowników
+    @Test
+    void shouldReturnAllUsers() {
+        // given
+        List<User> users = List.of(new User(), new User());
+        when(userRepository.findAll()).thenReturn(users);
+
+        // when
+        List<User> result = userService.findAll();
+
+        // then
+        assertThat(result).hasSize(2);
+        verify(userRepository).findAll();
+    }
+
+    // usuwanie przez admina
+    @Test
+    void shouldDeleteUserByAdmin() {
+        // given
+        Long userId = 10L;
+
+        // when
+        userService.deleteUserByAdmin(userId);
+
+        // then
+        verify(reviewRepository).anonymizeReviewsByUserId(userId);
+        verify(shelfRepository).deleteAllByUserId(userId);
+        verify(userRepository).deleteById(userId);
+    }
+
+    // generowania backupu (JSON)
+    @Test
+    void shouldGenerateProfileBackup() throws Exception {
+        // given
+        String username = "testuser";
+        User user = User.builder().id(1L).username(username).email("test@test.pl").build();
+        
+        Book book = Book.builder().title("Wiedźmin").build();
+        Shelf shelf = Shelf.builder().name("Ulubione").books(List.of(book)).build();
+        Review review = Review.builder().book(book).rating(5).content("Super").build();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findAllByUserId(user.getId())).thenReturn(List.of(shelf));
+        when(reviewRepository.findAllByUserId(user.getId())).thenReturn(List.of(review));
+
+        // when
+        byte[] result = userService.generateProfileBackup(username);
+
+        // then
+        assertThat(result).isNotEmpty();
+        String jsonContent = new String(result);
+
+        assertThat(jsonContent).contains("testuser");
+        assertThat(jsonContent).contains("Wiedźmin"); // tytuł książki z półki i recenzji
+        assertThat(jsonContent).contains("Ulubione"); // nazwa półki
+        assertThat(jsonContent).contains("Super");    // treść recenzji
+    }
+
+    // test importu - sukces (dodanie książki do półki)
+    @Test
+    void shouldImportProfileAndAddBooks() throws IOException {
+        // given
+        String username = "importUser";
+        User user = User.builder().id(5L).username(username).build();
+        
+        String json = """
+            {
+              "username": "importUser",
+              "shelves": [
+                {
+                  "name": "Do przeczytania",
+                  "books": ["Hobbit"]
+                }
+              ]
+            }
+            """;
+        
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getInputStream()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        
+        Shelf existingShelf = Shelf.builder()
+                .name("Do przeczytania")
+                .user(user)
+                .books(new ArrayList<>())
+                .build();
+        when(shelfRepository.findByNameAndUserId("Do przeczytania", user.getId()))
+                .thenReturn(Optional.of(existingShelf));
+        
+        Book book = Book.builder().id(100L).title("Hobbit").build();
+        when(bookRepository.findByTitle("Hobbit")).thenReturn(Optional.of(book));
+
+        // when
+        userService.importProfile(username, file);
+
+        // then
+        verify(bookRepository).findByTitle("Hobbit");
+        verify(shelfRepository).save(existingShelf);
+        assertThat(existingShelf.getBooks()).contains(book);
+    }
+
+    // test importu - walidacja (książka nie istnieje w bazie -> pomijamy)
+    @Test
+    void shouldSkipBookIfNotFoundInDatabaseDuringImport() throws IOException {
+        // given
+        String username = "importUser";
+        User user = User.builder().id(5L).username(username).build();
+        
+        String json = """
+            {
+              "shelves": [
+                {
+                  "name": "Inne",
+                  "books": ["Nieistniejąca Książka"]
+                }
+              ]
+            }
+            """;
+        
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getInputStream()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        when(shelfRepository.findByNameAndUserId("Inne", user.getId())).thenReturn(Optional.empty());
+        when(shelfRepository.save(any(Shelf.class))).thenAnswer(i -> i.getArguments()[0]); 
+
+        when(bookRepository.findByTitle("Nieistniejąca Książka")).thenReturn(Optional.empty());
+
+        // when
+        userService.importProfile(username, file);
+
+        // then
+        verify(bookRepository).findByTitle("Nieistniejąca Książka");
+        
+        ArgumentCaptor<Shelf> shelfCaptor = ArgumentCaptor.forClass(Shelf.class);
+        verify(shelfRepository, times(2)).save(shelfCaptor.capture());
+        
+        Shelf finalShelfState = shelfCaptor.getAllValues().get(1);
+        assertThat(finalShelfState.getBooks()).isEmpty();
     }
 }

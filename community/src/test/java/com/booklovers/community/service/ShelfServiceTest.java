@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -189,5 +190,160 @@ public class ShelfServiceTest {
         // then
         assertThat(thrown).isInstanceOf(RuntimeException.class)
                 .hasMessage("Książka nie istnieje");
+    }
+
+    // tworzenie półki (sukces)
+    @Test
+    void shouldCreateShelfSuccessfully() {
+        // given
+        String username = "jan";
+        String shelfName = "Fantastyka";
+        User user = User.builder().id(1L).username(username).build();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findByNameAndUserId(shelfName, user.getId())).thenReturn(Optional.empty());
+
+        // when
+        shelfService.createShelf(shelfName, username);
+
+        // then
+        ArgumentCaptor<Shelf> shelfCaptor = ArgumentCaptor.forClass(Shelf.class);
+        verify(shelfRepository).save(shelfCaptor.capture());
+        
+        Shelf savedShelf = shelfCaptor.getValue();
+        assertThat(savedShelf.getName()).isEqualTo(shelfName);
+        assertThat(savedShelf.getUser()).isEqualTo(user);
+        assertThat(savedShelf.getBooks()).isEmpty();
+    }
+
+    // tworzenie półki (błąd - półka już istnieje)
+    @Test
+    void shouldThrowExceptionWhenCreatingExistingShelf() {
+        // given
+        String username = "jan";
+        String shelfName = "Istniejaca";
+        User user = User.builder().id(1L).username(username).build();
+        Shelf existingShelf = Shelf.builder().name(shelfName).build();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findByNameAndUserId(shelfName, user.getId())).thenReturn(Optional.of(existingShelf));
+
+        // when
+        Throwable thrown = catchThrowable(() -> shelfService.createShelf(shelfName, username));
+
+        // then
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessage("Masz już półkę o takiej nazwie.");
+        verify(shelfRepository, never()).save(any());
+    }
+
+    // usuwanie książki z półki (sukces)
+    @Test
+    void shouldRemoveBookFromShelf() {
+        // given
+        String username = "jan";
+        Long shelfId = 1L;
+        Long bookId = 100L;
+        
+        User user = User.builder().username(username).build();
+        Book book = Book.builder().id(bookId).title("Hobbit").build();
+        
+        List<Book> books = new ArrayList<>(); 
+        books.add(book);
+        
+        Shelf shelf = Shelf.builder().id(shelfId).user(user).books(books).build();
+
+        when(shelfRepository.findById(shelfId)).thenReturn(Optional.of(shelf));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+
+        // when
+        shelfService.removeBookFromShelf(shelfId, bookId, username);
+
+        // then
+        assertThat(shelf.getBooks()).isEmpty();
+        verify(shelfRepository).save(shelf);
+    }
+
+    // przenoszenie książki (sukces)
+    @Test
+    void shouldMoveBookBetweenShelves() {
+        // given
+        String username = "jan";
+        Long sourceShelfId = 1L;
+        Long targetShelfId = 2L;
+        Long bookId = 50L;
+        
+        User user = User.builder().username(username).build();
+        Book book = Book.builder().id(bookId).build();
+        
+        Shelf sourceShelf = Shelf.builder().id(sourceShelfId).user(user).books(new ArrayList<>(List.of(book))).build();
+        Shelf targetShelf = Shelf.builder().id(targetShelfId).user(user).books(new ArrayList<>()).build();
+
+        when(shelfRepository.findById(sourceShelfId)).thenReturn(Optional.of(sourceShelf));
+        when(shelfRepository.findById(targetShelfId)).thenReturn(Optional.of(targetShelf));
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(book));
+
+        // when
+        shelfService.moveBook(sourceShelfId, targetShelfId, bookId, username);
+
+        // then
+        assertThat(sourceShelf.getBooks()).doesNotContain(book);
+        verify(shelfRepository).save(sourceShelf);
+        
+        // Książka dodana do docelowej
+        assertThat(targetShelf.getBooks()).contains(book);
+        verify(shelfRepository).save(targetShelf);
+    }
+
+    // licznik przeczytanych książek (gdy półka istnieje)
+    @Test
+    void shouldReturnCorrectBooksReadCount() {
+        // given
+        String username = "jan";
+        Long userId = 1L;
+        User user = User.builder().id(userId).username(username).build();
+        
+        List<Book> readBooks = List.of(new Book(), new Book(), new Book()); 
+        Shelf readShelf = Shelf.builder().name("Przeczytane").books(readBooks).build();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findByNameAndUserId("Przeczytane", userId)).thenReturn(Optional.of(readShelf));
+
+        // when
+        int count = shelfService.getBooksReadCount(username);
+
+        // then
+        assertThat(count).isEqualTo(3);
+    }
+
+    // licznik przeczytanych książek (gdy półka nie istnieje - np. błąd danych)
+    @Test
+    void shouldReturnZeroIfReadShelfNotFound() {
+        // given
+        String username = "jan";
+        Long userId = 1L;
+        User user = User.builder().id(userId).username(username).build();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findByNameAndUserId("Przeczytane", userId)).thenReturn(Optional.empty());
+
+        // when
+        int count = shelfService.getBooksReadCount(username);
+
+        // then
+        assertThat(count).isEqualTo(0);
+    }
+
+    // usuwanie wszystkich półek użytkownika
+    @Test
+    void shouldDeleteAllShelvesByUserId() {
+        // given
+        Long userId = 123L;
+
+        // when
+        shelfService.deleteAllByUserId(userId);
+
+        // then
+        verify(shelfRepository).deleteAllByUserId(userId);
     }
 }
