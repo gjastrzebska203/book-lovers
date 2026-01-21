@@ -24,6 +24,7 @@ import com.booklovers.community.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -64,14 +65,14 @@ public class BookController {
 
     @Operation(summary = "Dodaj nową książkę", description = "Dostępne tylko dla Administratora.")
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+    public ResponseEntity<Book> createBook(@Valid @RequestBody Book book) {
         bookService.saveBook(book);
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
 
     @Operation(summary = "Zaktualizuj książkę", description = "Edycja danych istniejącej książki. Tylko Admin.")
     @PutMapping("/{id}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
+    public ResponseEntity<Book> updateBook(@PathVariable Long id, @Valid @RequestBody Book bookDetails) {
         if (!bookRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
         }
