@@ -19,7 +19,7 @@ public class BookDto {
 
     @NotBlank(message = "Nazwa autora jest wymagana")
     @Size(max = 100, message = "Nazwa autora jest zbyt długa")
-    private String authorName; // zamiast całej encji Author
+    private String authorName; 
 
     @NotBlank(message = "ISBN jest wymagany")
     @Pattern(regexp = "^(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]$", message = "Niepoprawny format ISBN")
@@ -32,5 +32,5 @@ public class BookDto {
 
     @Min(value = 1, message = "Ocena nie może być mniejsza niż 1")
     @Max(value = 10, message = "Ocena nie może być większa niż 10")
-    private Double averageRating; // obliczona średnia
+    private Double averageRating;
 }

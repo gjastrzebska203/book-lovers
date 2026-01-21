@@ -14,9 +14,9 @@ public class RatingStatDto {
     @NotNull(message = "Ocena nie może być pusta")
     @Min(value = 1, message = "Ocena musi wynosić minimum 1")
     @Max(value = 10, message = "Ocena może wynosić maksimum 10")
-    private Integer rating; // liczba gwiazdek (np. 5)
+    private Integer rating; 
 
     @NotNull(message = "Liczba głosów nie może być pusta")
     @Min(value = 0, message = "Liczba głosów nie może być ujemna")
-    private Long count;     // ile osób dało taką ocenę
+    private Long count;  
 }
