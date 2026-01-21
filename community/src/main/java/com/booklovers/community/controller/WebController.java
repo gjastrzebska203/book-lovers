@@ -48,7 +48,6 @@ public class WebController {
     // formularz rejestracji (GET)
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
-        // przekazujemy pusty obiekt do formularza (wymagane przez th:object)
         model.addAttribute("user", new UserRegisterDto());
         return "register";
     }
@@ -59,17 +58,14 @@ public class WebController {
                                BindingResult result, 
                                Model model) {
         
-        // 1. walidacja adnotacji (@NotBlank itp.)
         if (result.hasErrors()) {
-            return "register"; // jeśli są błędy, wróć do formularza i pokaż je
+            return "register";
         }
 
         try {
-            // 2. próba rejestracji
             userService.registerUser(userDto);
-            return "redirect:/login?success"; // przekierowanie po sukcesie
+            return "redirect:/login?success"; 
         } catch (RuntimeException e) {
-            // 3. obsługa błędu biznesowego (np. email zajęty)
             model.addAttribute("error", e.getMessage());
             return "register";
         }
@@ -84,12 +80,11 @@ public class WebController {
     // lista książek
     @GetMapping("/books")
     public String listBooks(
-            @RequestParam(defaultValue = "") String query, // szukana fraza (domyślnie pusta)
-            @RequestParam(defaultValue = "0") int page,    // numer strony (od 0)
-            @RequestParam(defaultValue = "10") int size,   // rozmiar strony
+            @RequestParam(defaultValue = "") String query, 
+            @RequestParam(defaultValue = "0") int page,   
+            @RequestParam(defaultValue = "10") int size,  
             Model model) {
 
-        // obiekt paginacji (strona, wielkość)
         PageRequest pageable = PageRequest.of(page, size);
         
         Page<?> bookPage;
@@ -99,26 +94,22 @@ public class WebController {
         } else {
             bookPage = bookService.searchBooks(query, pageable);
         }
-        
-        // przekazujemy dane do widoku
+
         model.addAttribute("books", bookPage);
-        model.addAttribute("query", query); // żeby w pasku wyszukiwania został wpisany tekst
-        
+        model.addAttribute("query", query); 
+
         return "books";
     }
 
     // szczegóły książki
     @GetMapping("/books/{id}")
     public String bookDetails(@PathVariable Long id, Model model, java.security.Principal principal) {
-        // książka
         BookDto book = bookService.getBookById(id);
         model.addAttribute("book", book);
 
-        // recenzja
         model.addAttribute("reviews", reviewService.getReviewsForBook(id));
         model.addAttribute("stats", bookService.getBookStatistics(id));
 
-        // półki, jeśli user zalogowany
         if (principal != null) {
             model.addAttribute("userShelves", shelfService.getUserShelves(principal.getName()));
         }
@@ -221,8 +212,6 @@ public class WebController {
         return "redirect:/profile";
     }
 
-    // ...
-
     @PostMapping("/profile/import")
     public String importProfile(@RequestParam("file") MultipartFile file,
                                 java.security.Principal principal) {
@@ -233,7 +222,6 @@ public class WebController {
             userService.importProfile(principal.getName(), file);
             return "redirect:/profile?imported=true";
         } catch (Exception e) {
-            // Przekazujemy błąd w URL
             return "redirect:/profile?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
         }
     }

@@ -11,50 +11,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.booklovers.community.model.Author;
 import com.booklovers.community.service.AuthorService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequestMapping("/admin/authors")
 @RequiredArgsConstructor
+@Tag(name = "Autorzy - zarządzanie przez admina", description = "Zarządzanie listą użytkowników przez admina")
 public class AdminAuthorController {
     private final AuthorService authorService;
 
-    // Lista autorów
+    @Operation(summary = "Pobierz listę autorów", description = "Zwraca paginowaną listę wszystkich autorów.")
     @GetMapping
     public String listAuthors(Model model) {
         model.addAttribute("authors", authorService.getAllAuthors());
         return "admin/authors";
     }
 
-    // Formularz dodawania
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("author", new Author());
         return "admin/author-form";
     }
 
-    // Formularz edycji
+    // formularz edycji
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("author", authorService.getAuthorById(id));
         return "admin/author-form";
     }
 
-    // Zapis (Dodawanie i Edycja)
+    // zapis (Dodawanie i Edycja)
     @PostMapping("/save")
     public String saveAuthor(@ModelAttribute Author author) {
         authorService.saveAuthor(author);
         return "redirect:/admin/authors?success";
     }
 
-    // Usuwanie
+    // usuwanie
     @PostMapping("/delete/{id}")
     public String deleteAuthor(@PathVariable Long id) {
         try {
             authorService.deleteAuthor(id);
             return "redirect:/admin/authors?deleted";
         } catch (RuntimeException e) {
-            // Przekazujemy błąd w URL (prosta obsługa)
             return "redirect:/admin/authors?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
         }
     }

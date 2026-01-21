@@ -49,22 +49,21 @@ public class Book {
     private String isbn;
 
     @Size(max = 255, message = "Ścieżka do pliku jest zbyt długa")
-    private String coverImage; //ścieżka do pliku graficznego
+    private String coverImage;
 
     @Size(max = 4000, message = "Opis nie może być dłuższy niż 4000 znaków")
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    // relacja N:1 (wiele książek -> jeden autor)
+    // wiele książek -> jeden autor
     @NotNull(message = "Autor jest wymagany")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
-    @ToString.Exclude // <--- DODAJ TO! Przerywa pętlę toString
+    @ToString.Exclude 
     @EqualsAndHashCode.Exclude
-    @JsonIgnore // klucz obcy w tabeli books
     private Author author;
 
-    // relacja 1:N do Recenzji (jedna książka -> wiele recenzji)
+    // jedna książka -> wiele recenzji
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Review> reviews;

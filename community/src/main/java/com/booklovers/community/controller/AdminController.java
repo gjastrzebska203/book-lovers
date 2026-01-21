@@ -31,17 +31,20 @@ public class AdminController {
     private final ReviewService reviewService;
     private final AuthorRepository authorRepository; 
 
+    // dashboard admina
     @GetMapping
     public String dashboard() {
         return "admin/dashboard";
     }
 
+    // lista książek - widok admina
     @GetMapping("/books")
     public String manageBooks(Model model, Pageable pageable) {
         model.addAttribute("books", bookService.getAllBooks(pageable));
         return "admin/books";
     }
 
+    // dodawanie książki
     @GetMapping("/books/new")
     public String showCreateBookForm(Model model) {
         model.addAttribute("book", new Book());
@@ -49,6 +52,7 @@ public class AdminController {
         return "admin/book-form";
     }
 
+    // edycja książki
     @GetMapping("/books/edit/{id}")
     public String showUpdateBookForm(@PathVariable Long id, Model model) {
         Book book = bookService.findEntityById(id); 
@@ -57,6 +61,7 @@ public class AdminController {
         return "admin/book-form"; 
     }
 
+    // zapisanie książki
     @PostMapping("/books/save")
     public String saveBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
         if (result.hasErrors()) {
@@ -67,36 +72,42 @@ public class AdminController {
         return "redirect:/admin/books";
     }
 
+    // usuwanie książki
     @GetMapping("/books/delete/{id}")
     public String deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
         return "redirect:/admin/books";
     }
 
+    // zarządzanie użytkownikami
     @GetMapping("/users")
     public String manageUsers(Model model) {
         model.addAttribute("users", userService.findAll());
         return "admin/users";
     }
 
+    // blokowanie/odblokowanie użytkowników
     @GetMapping("/users/toggle-block/{id}")
     public String toggleUserBlock(@PathVariable Long id) {
         userService.toggleUserBlock(id);
         return "redirect:/admin/users";
     }
 
+    // recenzje
     @GetMapping("/reviews")
     public String manageReviews(Model model) {
         model.addAttribute("reviews", reviewService.getAllReviews());
         return "admin/reviews";
     }
 
+    // usuwanie recenzji
     @GetMapping("/reviews/delete/{id}")
     public String deleteReview(@PathVariable Long id) {
         reviewService.deleteReview(id);
         return "redirect:/admin/reviews";
     }
 
+    // export listy książek do CSV
     @GetMapping("/books/export")
     public ResponseEntity<byte[]> exportBooks() {
         byte[] csvData = bookService.exportBooksToCsv();
@@ -107,6 +118,7 @@ public class AdminController {
                 .body(csvData);
     }
 
+    // usuwanie użytkownika
     @PostMapping("/users/{id}/delete")
     public String deleteUser(@PathVariable Long id) {
         userService.deleteUserByAdmin(id);

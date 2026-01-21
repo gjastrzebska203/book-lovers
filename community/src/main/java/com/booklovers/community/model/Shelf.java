@@ -3,8 +3,6 @@ package com.booklovers.community.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -39,28 +37,23 @@ public class Shelf {
     @NotBlank(message = "Nazwa półki nie może być pusta")
     @Size(min = 2, max = 50, message = "Nazwa półki musi mieć od 2 do 50 znaków")
     @Column(nullable = false)
-    private String name; // np. "Przeczytane", "Fantastyka"
+    private String name; 
     
-    // czy to półka systemowa (nieusuwalna) czy użytkownika?
     private boolean isSystemShelf; 
 
     // wiele półek -> jeden użytkownik
     @NotNull(message = "Półka musi być przypisana do użytkownika")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonIgnore
     private User user;
 
-    // relacja wiele do wielu: półka <-> książki
-    // spełnia wymaganie: "@ManyToMany z @JoinTable"
+    // wiele półka <-> wiele książek
     @ManyToMany
     @JoinTable(
-        name = "shelf_books", // nazwa tabeli łączącej w bazie
+        name = "shelf_books", 
         joinColumns = @JoinColumn(name = "shelf_id"),
         inverseJoinColumns = @JoinColumn(name = "book_id")
     )
-    @JsonIgnore
     @Builder.Default
     private List<Book> books = new ArrayList<>();
-
 }

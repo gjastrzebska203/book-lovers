@@ -43,7 +43,7 @@ public class User {
 
     @NotBlank(message = "Hasło jest wymagane")
     @Column(nullable = false)
-    private String password; // zahaszowane hasło
+    private String password; 
 
     @NotBlank(message = "Email jest wymagany")
     @Email(message = "Niepoprawny format adresu email")
@@ -57,7 +57,7 @@ public class User {
     private String bio;
 
     @NotBlank
-    private String role; // np. "ROLE_USER", "ROLE_ADMIN"
+    private String role; // "ROLE_USER", "ROLE_ADMIN"
 
     // jeden użytkownik -> wiele półek
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -2,8 +2,6 @@ package com.booklovers.community.model;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -48,11 +46,8 @@ public class Author {
     private String bio;
 
     // jeden autor -> wiele książek
-    // "author" to nazwa pola w klasie Book
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
-    @ToString.Exclude // <--- DODAJ TO!
+    @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
     private List<Book> books;
-    
 }

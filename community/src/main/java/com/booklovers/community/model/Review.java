@@ -2,8 +2,6 @@ package com.booklovers.community.model;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -40,7 +38,7 @@ public class Review {
     @Min(value = 1, message = "Minimalna ocena to 1")
     @Max(value = 10, message = "Maksymalna ocena to 10")
     @Column(nullable = false)
-    private Integer rating; // 1-10
+    private Integer rating; 
 
     @NotBlank(message = "Treść recenzji nie może być pusta")
     @Size(min = 5, max = 4000, message = "Recenzja musi mieć od 5 do 4000 znaków")
@@ -51,14 +49,12 @@ public class Review {
 
     // wiele recenzji -> jedna książka
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
 
     // wiele recenzji -> jeden użytkownik
     @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "user_id") // może być null jeśli usuniemy usera (anonimizacja)
+    @JoinColumn(name = "user_id") 
     private User user;
     
     @PrePersist

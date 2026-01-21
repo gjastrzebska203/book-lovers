@@ -45,7 +45,6 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Conflict / Internal Error");
         error.put("message", ex.getMessage());
-        // tu można by rozróżnić typy wyjątków, ale dla uproszczenia dajemy 409/400
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 

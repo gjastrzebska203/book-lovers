@@ -2,14 +2,18 @@ package com.booklovers.community.data;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+// import com.booklovers.community.model.Book;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
+// import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.repository.ShelfRepository;
 import com.booklovers.community.repository.UserRepository;
 
@@ -20,6 +24,9 @@ public class ShelfRepositoryTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    // @Autowired
+    // private BookRepository bookRepository;
 
     // pobieranie wszystkich półek danego użytkownika
     @Test
@@ -98,4 +105,91 @@ public class ShelfRepositoryTest {
         // then
         assertThat(exists).isFalse();
     }
+
+    // test usuwania wszystkich półek użytkownika
+    @Test
+    void shouldDeleteAllShelvesByUserId() {
+        // given
+        User user = userRepository.save(User.builder().username("deleteMe").email("del@test.pl").password("pass").role("USER").build());
+        User otherUser = userRepository.save(User.builder().username("safe").email("safe@test.pl").password("pass").role("USER").build());
+
+        shelfRepository.save(Shelf.builder().name("S1").user(user).build());
+        shelfRepository.save(Shelf.builder().name("S2").user(user).build());
+        shelfRepository.save(Shelf.builder().name("S3").user(otherUser).build()); // Półka innego użytkownika
+
+        // when
+        shelfRepository.deleteAllByUserId(user.getId());
+
+        // then
+        List<Shelf> userShelves = shelfRepository.findAllByUserId(user.getId());
+        assertThat(userShelves).isEmpty();
+
+        List<Shelf> otherUserShelves = shelfRepository.findAllByUserId(otherUser.getId());
+        assertThat(otherUserShelves).hasSize(1); 
+    }
+
+    // test znajdowania półki po nazwie i ID usera (Znaleziono)
+    @Test
+    void shouldFindShelfByNameAndUserId() {
+        // given
+        User user = userRepository.save(User.builder().username("finder").email("f@test.pl").password("pass").role("USER").build());
+        Shelf shelf = shelfRepository.save(Shelf.builder().name("Szukana").user(user).build());
+
+        // when
+        Optional<Shelf> found = shelfRepository.findByNameAndUserId("Szukana", user.getId());
+
+        // then
+        assertThat(found).isPresent();
+        assertThat(found.get().getId()).isEqualTo(shelf.getId());
+    }
+
+    // test znajdowania półki po nazwie (Nie znaleziono)
+    @Test
+    void shouldReturnEmptyWhenShelfNotFoundByName() {
+        // given
+        User user = userRepository.save(User.builder().username("finder2").email("f2@test.pl").password("pass").role("USER").build());
+        shelfRepository.save(Shelf.builder().name("Istnieje").user(user).build());
+
+        // when
+        Optional<Shelf> found = shelfRepository.findByNameAndUserId("Nieistnieje", user.getId());
+
+        // then
+        assertThat(found).isEmpty();
+    }
+
+    // test Query: Liczenie czytelników (ile razy książka występuje na półkach)
+    // @Test
+    // void shouldCountReadersByBookId() {
+    //     // given
+    //     // 1. Tworzymy książkę (uproszczone, dostosuj do swojej encji Book/Author)
+    //     Book book = Book.builder().title("Popularna Książka").isbn("111").build();
+    //     // Jeśli masz relację z autorem:
+    //     // Author author = authorRepository.save(Author.builder().firstName("A").lastName("B").build());
+    //     // book.setAuthor(author);
+    //     book = bookRepository.save(book);
+
+    //     // 2. Tworzymy userów
+    //     User u1 = userRepository.save(User.builder().username("r1").email("r1@test.pl").password("p").role("USER").build());
+    //     User u2 = userRepository.save(User.builder().username("r2").email("r2@test.pl").password("p").role("USER").build());
+    //     User u3 = userRepository.save(User.builder().username("r3").email("r3@test.pl").password("p").role("USER").build());
+
+    //     // 3. Tworzymy półki i dodajemy tę samą książkę do dwóch userów
+    //     Shelf s1 = Shelf.builder().name("P1").user(u1).books(new ArrayList<>()).build();
+    //     s1.getBooks().add(book);
+    //     shelfRepository.save(s1);
+
+    //     Shelf s2 = Shelf.builder().name("P2").user(u2).books(new ArrayList<>()).build();
+    //     s2.getBooks().add(book);
+    //     shelfRepository.save(s2);
+
+    //     // User 3 ma półkę, ale bez tej książki
+    //     Shelf s3 = Shelf.builder().name("P3").user(u3).books(new ArrayList<>()).build();
+    //     shelfRepository.save(s3);
+
+    //     // when
+    //     long count = shelfRepository.countReadersByBookId(book.getId());
+
+    //     // then
+    //     assertThat(count).isEqualTo(2);
+    // }
 }

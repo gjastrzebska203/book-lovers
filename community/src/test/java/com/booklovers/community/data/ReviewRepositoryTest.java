@@ -3,6 +3,7 @@ package com.booklovers.community.data;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+// import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,8 @@ import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.repository.ReviewRepository;
 import com.booklovers.community.repository.UserRepository;
 
+// import jakarta.persistence.EntityManager;
+
 @DataJpaTest
 public class ReviewRepositoryTest {
     @Autowired
@@ -30,6 +33,9 @@ public class ReviewRepositoryTest {
 
     @Autowired
     private AuthorRepository authorRepository;
+
+    // @Autowired
+    // private EntityManager entityManager;
 
     // pobieranie recenzji dla konkretnej książki
     @Test
@@ -102,4 +108,112 @@ public class ReviewRepositoryTest {
         // then
         assertThat(average).isNull();
     }
+
+    // // anonimizacja recenzji (ustawienie user_id na NULL)
+    // @Test
+    // void shouldAnonymizeReviewsByUserId() {
+    //     // given
+    //     Author author = authorRepository.save(Author.builder().firstName("A").lastName("B").build());
+    //     Book book = bookRepository.save(Book.builder().title("T").isbn("111").author(author).build());
+    //     User user = userRepository.save(User.builder().username("deleteMe").email("d@d.pl").password("p").role("USER").build());
+
+    //     Review review = Review.builder().rating(5).content("Delete me").book(book).user(user).build();
+    //     reviewRepository.save(review);
+    //     Long reviewId = review.getId();
+
+    //     // when
+    //     reviewRepository.anonymizeReviewsByUserId(user.getId());
+
+    //     entityManager.flush();
+    //     entityManager.clear();
+
+    //     // then
+    //     Optional<Review> updatedReview = reviewRepository.findById(reviewId);
+    //     assertThat(updatedReview).isPresent();
+    //     assertThat(updatedReview.get().getUser()).isNull(); // Użytkownik powinien być NULL
+    //     assertThat(updatedReview.get().getContent()).isEqualTo("Delete me"); // Treść zostaje
+    // }
+
+    // pobieranie wszystkich recenzji użytkownika
+    // @Test
+    // void shouldFindAllReviewsByUserId() {
+    //     // given
+    //     Author author = authorRepository.save(Author.builder().firstName("A").lastName("B").build());
+    //     Book book = bookRepository.save(Book.builder().title("T").isbn("111").author(author).build());
+        
+    //     User user1 = userRepository.save(User.builder().username("u1").email("u1@x.pl").password("p").role("USER").build());
+    //     User user2 = userRepository.save(User.builder().username("u2").email("u2@x.pl").password("p").role("USER").build());
+
+    //     reviewRepository.save(Review.builder().rating(5).book(book).user(user1).build());
+    //     reviewRepository.save(Review.builder().rating(4).book(book).user(user1).build());
+    //     reviewRepository.save(Review.builder().rating(1).book(book).user(user2).build());
+
+    //     // when
+    //     List<Review> user1Reviews = reviewRepository.findAllByUserId(user1.getId());
+
+    //     // then
+    //     assertThat(user1Reviews).hasSize(2);
+    //     assertThat(user1Reviews).extracting(Review::getRating).contains(5, 4);
+    // }
+
+    // rozkład ocen (Histogram)
+    // @Test
+    // void shouldGetRatingDistribution() {
+    //     // given
+    //     Author author = authorRepository.save(Author.builder().firstName("A").lastName("B").build());
+    //     Book book = bookRepository.save(Book.builder().title("StatBook").isbn("999").author(author).build());
+    //     User user = userRepository.save(User.builder().username("u").email("u@u.pl").password("p").role("USER").build());
+
+    //     // 3 razy ocena 10
+    //     reviewRepository.save(Review.builder().rating(10).book(book).user(user).build());
+    //     reviewRepository.save(Review.builder().rating(10).book(book).user(user).build());
+    //     reviewRepository.save(Review.builder().rating(10).book(book).user(user).build());
+        
+    //     // 1 raz ocena 1
+    //     reviewRepository.save(Review.builder().rating(1).book(book).user(user).build());
+
+    //     // when
+    //     List<Object[]> distribution = reviewRepository.getRatingDistribution(book.getId());
+
+    //     // then
+    //     assertThat(distribution).hasSize(2);
+        
+    //     // Weryfikacja zawartości (kolejność może zależeć od bazy, więc sprawdzamy dopasowanie)
+    //     boolean foundTen = false;
+    //     boolean foundOne = false;
+
+    //     for (Object[] row : distribution) {
+    //         Integer rating = ((Number) row[0]).intValue(); // H2/Postgres mogą zwracać różne typy numeryczne
+    //         Long count = ((Number) row[1]).longValue();
+
+    //         if (rating == 10) {
+    //             assertThat(count).isEqualTo(3L);
+    //             foundTen = true;
+    //         } else if (rating == 1) {
+    //             assertThat(count).isEqualTo(1L);
+    //             foundOne = true;
+    //         }
+    //     }
+        
+    //     assertThat(foundTen).isTrue();
+    //     assertThat(foundOne).isTrue();
+    // }
+
+    // liczenie recenzji dla książki (Count)
+    // @Test
+    // void shouldCountReviewsByBookId() {
+    //     // given
+    //     Author author = authorRepository.save(Author.builder().firstName("A").lastName("B").build());
+    //     Book book = bookRepository.save(Book.builder().title("CountMe").isbn("222").author(author).build());
+    //     User user = userRepository.save(User.builder().username("u").email("u@u.pl").password("p").role("USER").build());
+
+    //     reviewRepository.save(Review.builder().rating(5).book(book).user(user).build());
+    //     reviewRepository.save(Review.builder().rating(5).book(book).user(user).build());
+
+    //     // when
+    //     long count = reviewRepository.countByBookId(book.getId());
+
+    //     // then
+    //     assertThat(count).isEqualTo(2L);
+    // }
 }
