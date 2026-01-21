@@ -10,11 +10,11 @@ spring:
     defer-datasource-initialization: true
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update # Automatycznie tworzy tabele na podstawie encji
-    show-sql: true # Pokaże zapytania w konsoli
+      ddl-auto: update
+    show-sql: true
   h2:
     console:
-      enabled: true # Dostęp do bazy przez przeglądarkę
+      enabled: true
       path: /h2-console
   sql:
     init:
