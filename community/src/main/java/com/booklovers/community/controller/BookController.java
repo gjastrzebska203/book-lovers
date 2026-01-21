@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.booklovers.community.dto.BookDto;
 import com.booklovers.community.dto.RatingStatDto;
 import com.booklovers.community.model.Book;
+import com.booklovers.community.repository.BookRepository;
 import com.booklovers.community.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(name = "Książki", description = "Zarządzanie katalogiem książek i przeglądanie")
 public class BookController {
+    private final BookRepository bookRepository;
     private final BookService bookService;
 
     @Operation(summary = "Pobierz listę książek", description = "Zwraca paginowaną listę wszystkich książek.")
@@ -53,7 +55,11 @@ public class BookController {
     @Operation(summary = "Statystyki ocen", description = "Zwraca histogram ocen dla danej książki (dane z JdbcTemplate).")
     @GetMapping("/{id}/stats")
     public ResponseEntity<List<RatingStatDto>> getBookStats(@PathVariable Long id) {
-        return ResponseEntity.ok(bookService.getBookRatingStats(id));
+        List<RatingStatDto> stats = bookService.getBookRatingStats(id);
+        if (stats == null || stats.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
+        }
+        return ResponseEntity.ok(stats);
     }
 
     @Operation(summary = "Dodaj nową książkę", description = "Dostępne tylko dla Administratora.")
@@ -66,6 +72,9 @@ public class BookController {
     @Operation(summary = "Zaktualizuj książkę", description = "Edycja danych istniejącej książki. Tylko Admin.")
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Long id, @RequestBody Book bookDetails) {
+        if (!bookRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
+        }
         bookDetails.setId(id);
         bookService.saveBook(bookDetails);
         return ResponseEntity.ok(bookDetails);
@@ -74,6 +83,9 @@ public class BookController {
     @Operation(summary = "Usuń książkę", description = "Trwałe usunięcie książki z bazy. Tylko Admin.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
+        if (!bookRepository.existsById(id)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build(); 
+        }
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
     }

@@ -50,17 +50,14 @@ public class UserService {
             throw new RuntimeException("Email już istnieje!");
         }
 
-        // tworzenie użytkownika
         User user = User.builder()
                 .username(dto.getUsername())
                 .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword())) // Kodowanie hasła
+                .password(passwordEncoder.encode(dto.getPassword())) 
                 .role("ROLE_USER")
                 .build();
 
         User savedUser = userRepository.save(user);
-
-        // tworzenie domyślnych półek (wymaganie specyficzne)
         createDefaultShelves(savedUser);
 
         return savedUser;
@@ -73,7 +70,7 @@ public class UserService {
             .map(name -> Shelf.builder()
                     .name(name)
                     .user(user)
-                    .isSystemShelf(true) // Oznaczamy jako systemowe
+                    .isSystemShelf(true)
                     .build())
             .toList();
             
@@ -85,11 +82,10 @@ public class UserService {
     public void updateUserProfile(@NotBlank String username, @Size(max = 1000) String newBio, MultipartFile avatarFile) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setBio(newBio); // aktualizacja Bio
-        // aktualizacja avatara (jeśli przesłano nowy plik)
+        user.setBio(newBio);
         if (avatarFile != null && !avatarFile.isEmpty()) {
             String fileName = fileStorageService.storeFile(avatarFile);
-            user.setAvatar("/uploads/" + fileName); // Zapisujemy ścieżkę webową
+            user.setAvatar("/uploads/" + fileName);
         }
 
         userRepository.save(user);
@@ -112,7 +108,6 @@ public class UserService {
     public void toggleUserBlock(@NotNull Long userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
-        // Odwracamy wartość (true -> false, false -> true)
         user.setEnabled(!user.isEnabled());
         userRepository.save(user);
     }
@@ -185,7 +180,6 @@ public class UserService {
             if (backup.getShelves() != null) {
                 for (UserBackupDto.ShelfBackupDto shelfDto : backup.getShelves()) {
                     
-                    // 1. Znajdź istniejącą półkę lub stwórz nową (jeśli to np. półka niestandardowa)
                     Shelf shelf = shelfRepository.findByNameAndUserId(shelfDto.getName(), user.getId())
                             .orElseGet(() -> {
                                 Shelf newShelf = new Shelf();
@@ -195,19 +189,12 @@ public class UserService {
                                 return shelfRepository.save(newShelf);
                             });
 
-                    // 2. Iterujemy po tytułach książek z pliku JSON
                     for (String bookTitle : shelfDto.getBooks()) {
-                        
-                        // WALIDACJA: Szukamy książki w bazie po tytule
                         bookRepository.findByTitle(bookTitle).ifPresent(book -> {
-                            // Wykona się TYLKO jeśli książka istnieje w bazie
-                            
-                            // Sprawdzamy, czy książki już nie ma na półce (unikamy duplikatów)
                             if (!shelf.getBooks().contains(book)) {
                                 shelf.getBooks().add(book);
                             }
                         });
-                        // Jeśli książka nie istnieje -> ifPresent się nie wykona -> pomijamy ją milcząco
                     }
                     shelfRepository.save(shelf);
                 }

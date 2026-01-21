@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    
     private final UserService userService;
 
     @PostMapping("/register")
@@ -27,5 +26,4 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("Użytkownik utworzony. ID: " + registeredUser.getId());
     }
-
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.booklovers.community.dto.BookDto;
 import com.booklovers.community.dto.UserRegisterDto;
+import com.booklovers.community.model.Author;
+import com.booklovers.community.model.Book;
 import com.booklovers.community.model.Shelf;
 import com.booklovers.community.model.User;
+import com.booklovers.community.repository.AuthorRepository;
+import com.booklovers.community.service.AuthorService;
 import com.booklovers.community.service.BookService;
 import com.booklovers.community.service.ReviewService;
 import com.booklovers.community.service.ShelfService;
@@ -32,11 +37,12 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 public class WebController {
-
     private final BookService bookService;
     private final UserService userService;
     private final ShelfService shelfService;
     private final ReviewService reviewService;
+    private final AuthorService authorService;
+    private final AuthorRepository authorRepository;
 
     // strona główna
     @GetMapping("/")
@@ -224,5 +230,136 @@ public class WebController {
         } catch (Exception e) {
             return "redirect:/profile?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
         }
+    }
+
+    @GetMapping("/admin/authors")
+    public String listAuthors(Model model) {
+        model.addAttribute("authors", authorService.getAllAuthors());
+        return "admin/authors";
+    }
+
+    @GetMapping("/admin/authors/new")
+    public String showAddForm(Model model) {
+        model.addAttribute("author", new Author());
+        return "admin/author-form";
+    }
+
+    // formularz edycji
+    @GetMapping("/admin/authors/edit/{id}")
+    public String showEditForm(@PathVariable Long id, Model model) {
+        model.addAttribute("author", authorService.getAuthorById(id));
+        return "admin/author-form";
+    }
+
+    // zapis (Dodawanie i Edycja)
+    @PostMapping("/admin/authors/save")
+    public String saveAuthor(@ModelAttribute Author author) {
+        authorService.saveAuthor(author);
+        return "redirect:/admin/authors?success";
+    }
+
+    // usuwanie
+    @PostMapping("/admin/authors/delete/{id}")
+    public String deleteAuthor(@PathVariable Long id) {
+        try {
+            authorService.deleteAuthor(id);
+            return "redirect:/admin/authors?deleted";
+        } catch (RuntimeException e) {
+            return "redirect:/admin/authors?error=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+    }
+
+        // dashboard admina
+    @GetMapping("/admin")
+    public String dashboard() {
+        return "admin/dashboard";
+    }
+
+    // lista książek - widok admina
+    @GetMapping("/admin/books")
+    public String manageBooks(Model model, Pageable pageable) {
+        model.addAttribute("books", bookService.getAllBooks(pageable));
+        return "admin/books";
+    }
+
+    // dodawanie książki
+    @GetMapping("/admin/books/new")
+    public String showCreateBookForm(Model model) {
+        model.addAttribute("book", new Book());
+        model.addAttribute("authors", authorRepository.findAll());
+        return "admin/book-form";
+    }
+
+    // edycja książki
+    @GetMapping("/admin/books/edit/{id}")
+    public String showUpdateBookForm(@PathVariable Long id, Model model) {
+        Book book = bookService.findEntityById(id); 
+        model.addAttribute("book", book);
+        model.addAttribute("authors", authorRepository.findAll());
+        return "admin/book-form"; 
+    }
+
+    // zapisanie książki
+    @PostMapping("/admin/books/save")
+    public String saveBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
+        if (result.hasErrors()) {
+            model.addAttribute("authors", authorRepository.findAll());
+            return "admin/book-form";
+        }
+        bookService.saveBook(book);
+        return "redirect:/admin/books";
+    }
+
+    // usuwanie książki
+    @GetMapping("/admin/books/delete/{id}")
+    public String deleteBook(@PathVariable Long id) {
+        bookService.deleteBook(id);
+        return "redirect:/admin/books";
+    }
+
+    // zarządzanie użytkownikami
+    @GetMapping("/admin/users")
+    public String manageUsers(Model model) {
+        model.addAttribute("users", userService.findAll());
+        return "admin/users";
+    }
+
+    // blokowanie/odblokowanie użytkowników
+    @GetMapping("/admin/users/toggle-block/{id}")
+    public String toggleUserBlock(@PathVariable Long id) {
+        userService.toggleUserBlock(id);
+        return "redirect:/admin/users";
+    }
+
+    // recenzje
+    @GetMapping("/admin/reviews")
+    public String manageReviews(Model model) {
+        model.addAttribute("reviews", reviewService.getAllReviews());
+        return "admin/reviews";
+    }
+
+    // usuwanie recenzji
+    @GetMapping("/admin/reviews/delete/{id}")
+    public String deleteReview(@PathVariable Long id) {
+        reviewService.deleteReview(id);
+        return "redirect:/admin/reviews";
+    }
+
+    // export listy książek do CSV
+    @GetMapping("/admin/books/export")
+    public ResponseEntity<byte[]> exportBooks() {
+        byte[] csvData = bookService.exportBooksToCsv();
+        String fileName = "ksiazki_export_" + System.currentTimeMillis() + ".csv";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csvData);
+    }
+
+    // usuwanie użytkownika
+    @PostMapping("/admin/users/{id}/delete")
+    public String deleteUser(@PathVariable Long id) {
+        userService.deleteUserByAdmin(id);
+        return "redirect:/admin/users?deleted";
     }
 }

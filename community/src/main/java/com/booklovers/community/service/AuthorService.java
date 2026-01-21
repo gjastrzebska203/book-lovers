@@ -33,7 +33,7 @@ public class AuthorService {
 
     @Transactional
     public void deleteAuthor(Long id) {
-        // Zabezpieczenie: Nie usuwamy autora, jeśli ma książki
+        // nie usuwamy autora, jeśli ma książki
         if (bookRepository.existsByAuthorId(id)) {
             throw new RuntimeException("Nie można usunąć autora, który ma przypisane książki. Najpierw usuń książki.");
         }

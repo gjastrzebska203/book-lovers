@@ -125,30 +125,24 @@ public class BookService {
     }
 
     public BookStatsDto getBookStatistics(Long bookId) {
-        // ... (pobieranie średniej i liczników bez zmian) ...
         Double avg = reviewRepository.getAverageRatingForBook(bookId);
         if (avg == null) avg = 0.0;
         
         long ratingCount = reviewRepository.countByBookId(bookId);
         long readerCount = shelfRepository.countReadersByBookId(bookId);
 
-        // 3. Rozkład ocen (Histogram)
+        // rozkład ocen
         List<Object[]> distributionRaw = reviewRepository.getRatingDistribution(bookId);
         Map<Integer, Long> distribution = new HashMap<>();
         
-        // --- ZMIANA TUTAJ: Inicjalizujemy mapę dla 10 gwiazdek ---
         for (int i = 1; i <= 10; i++) {
             distribution.put(i, 0L);
         }
 
-        // Wypełniamy danymi z bazy
         for (Object[] row : distributionRaw) {
-            // Upewniamy się, że rzutowanie jest bezpieczne
-            // Czasami baza zwraca Integer, czasami Short/Byte w zależności od kolumny
             Integer rating = ((Number) row[0]).intValue();
             Long count = (Long) row[1];
             
-            // Dodatkowe zabezpieczenie: ignorujemy oceny spoza skali 1-10 (jeśli są śmieci w bazie)
             if (rating >= 1 && rating <= 10) {
                 distribution.put(rating, count);
             }
