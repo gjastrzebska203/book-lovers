@@ -1,213 +1,242 @@
-// package com.booklovers.community.controller;
+package com.booklovers.community.controller;
 
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.verify;
-// import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-// import java.util.List;
+import java.util.Collections;
+import java.util.List;
 
-// import org.junit.jupiter.api.Test;
-// import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-// import org.springframework.boot.test.mock.mockito.MockBean;
-// import org.springframework.context.annotation.Import;
-// import org.springframework.data.domain.Page;
-// import org.springframework.data.domain.PageImpl;
-// import org.springframework.data.domain.Pageable;
-// import org.springframework.http.MediaType;
-// import org.springframework.security.test.context.support.WithMockUser;
-// import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
 
-// import com.booklovers.community.dto.BookDto;
-// import com.booklovers.community.dto.RatingStatDto;
-// import com.booklovers.community.model.Book;
-// import com.booklovers.community.security.SecurityConfig;
-// import com.booklovers.community.service.BookService;
-// import com.fasterxml.jackson.databind.ObjectMapper;
+import com.booklovers.community.dto.BookDto;
+import com.booklovers.community.dto.RatingStatDto;
+import com.booklovers.community.model.Author;
+import com.booklovers.community.model.Book;
+import com.booklovers.community.repository.BookRepository;
+import com.booklovers.community.security.SecurityConfig;
+import com.booklovers.community.service.BookService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-// import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-// import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-// import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+@WebMvcTest(BookController.class)
+@Import(SecurityConfig.class)
+public class BookControllerTest {
 
-// @WebMvcTest(BookController.class)
-// @Import(SecurityConfig.class)
-// public class BookControllerTest {
-//     @Autowired
-//     private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-//     @Autowired
-//     private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-//     @MockBean
-//     private BookService bookService;
+    @MockitoBean
+    private BookService bookService;
 
-//     // pobranie listy książek (Dostęp publiczny)
-//     @Test
-//     @WithMockUser // Symulujemy dowolnego użytkownika (lub brak, zależnie od configu, tutaj user wystarczy)
-//     void shouldReturnListOfBooks() throws Exception {
-//         // given
-//         BookDto bookDto = BookDto.builder().id(1L).title("Wiedźmin").authorName("Sapkowski").build();
-//         Page<BookDto> page = new PageImpl<>(List.of(bookDto));
+    @MockitoBean
+    private BookRepository bookRepository;
 
-//         when(bookService.getAllBooks(any(Pageable.class))).thenReturn(page);
+    // pobieranie wszystkich książek
+    @Test
+    @WithMockUser
+    void shouldReturnAllBooks() throws Exception {
+        // given
+        BookDto dto = BookDto.builder().id(1L).title("Test Book").build();
+        Page<BookDto> page = new PageImpl<>(List.of(dto));
+        
+        when(bookService.getAllBooks(any(Pageable.class))).thenReturn(page);
 
-//         // when & then
-//         mockMvc.perform(get("/api/v1/books")
-//                         .contentType(MediaType.APPLICATION_JSON))
-//                 .andExpect(status().isOk()) // Oczekujemy HTTP 200
-//                 .andExpect(jsonPath("$.content.length()").value(1)) // Czy jest 1 element
-//                 .andExpect(jsonPath("$.content[0].title").value("Wiedźmin"));
-//     }
+        // when & then
+        mockMvc.perform(get("/api/v1/books"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].title").value("Test Book"));
+    }
 
-//     // pobranie szczegółów książki po ID (Dostęp publiczny)
-//     @Test
-//     @WithMockUser
-//     void shouldReturnBookById() throws Exception {
-//         // given
-//         Long bookId = 1L;
-//         BookDto bookDto = BookDto.builder().id(bookId).title("Hobbit").isbn("12345").build();
+    // wyszukiwanie (Search)
+    @Test
+    @WithMockUser
+    void shouldSearchBooks() throws Exception {
+        // given
+        String query = "Fantasy";
+        Page<BookDto> page = new PageImpl<>(Collections.emptyList());
+        when(bookService.searchBooks(any(String.class), any(Pageable.class))).thenReturn(page);
 
-//         when(bookService.getBookById(bookId)).thenReturn(bookDto);
+        // when & then
+        mockMvc.perform(get("/api/v1/books/search")
+                        .param("query", query))
+                .andExpect(status().isOk());
+    }
 
-//         // when & then
-//         mockMvc.perform(get("/api/v1/books/{id}", bookId))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.title").value("Hobbit"))
-//                 .andExpect(jsonPath("$.isbn").value("12345"));
-//     }
+    // pobieranie po ID
+    @Test
+    @WithMockUser
+    void shouldGetBookById() throws Exception {
+        // given
+        Long id = 1L;
+        BookDto dto = BookDto.builder().id(id).title("Details").build();
+        when(bookService.getBookById(id)).thenReturn(dto);
 
-//     // dodanie nowej książki (Tylko ADMIN - Sukces)
-//     @Test
-//     @WithMockUser(username = "admin", roles = "ADMIN") // Symulujemy Admina
-//     void shouldCreateBookAsAdmin() throws Exception {
-//         // given
-//         Book newBook = Book.builder().title("Nowa Książka").isbn("999").build();
-//         String jsonRequest = objectMapper.writeValueAsString(newBook);
+        // when & then
+        mockMvc.perform(get("/api/v1/books/{id}", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Details"));
+    }
 
-//         // when & then
-//         mockMvc.perform(post("/api/v1/books")
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(jsonRequest)
-//                         .with(csrf())) // CSRF jest wymagany przy metodach zmieniających stan (POST, PUT, DELETE)
-//                 .andExpect(status().isCreated()) // Oczekujemy HTTP 201
-//                 .andExpect(jsonPath("$.title").value("Nowa Książka"));
+    // statystyki - SUKCES (są dane)
+    @Test
+    @WithMockUser
+    void shouldReturnStatsWhenAvailable() throws Exception {
+        // given
+        Long id = 1L;
+        RatingStatDto stat = new RatingStatDto(5, 10L);
+        when(bookService.getBookRatingStats(id)).thenReturn(List.of(stat));
 
-//         verify(bookService).saveBook(any(Book.class));
-//     }
+        // when & then
+        mockMvc.perform(get("/api/v1/books/{id}/stats", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].rating").value(5));
+    }
 
-//     // blokada dodawania książki (Zwykły USER - Forbidden)
-//     @Test
-//     @WithMockUser(username = "user", roles = "USER") // Symulujemy zwykłego usera
-//     void shouldForbidCreateBookForRegularUser() throws Exception {
-//         // given
-//         Book newBook = Book.builder().title("Hacker Book").build();
-//         String jsonRequest = objectMapper.writeValueAsString(newBook);
+    // statystyki - BŁĄD 404 (brak danych/null)
+    @Test
+    @WithMockUser
+    void shouldReturnNotFoundWhenStatsAreEmpty() throws Exception {
+        // given
+        Long id = 1L;
+        when(bookService.getBookRatingStats(id)).thenReturn(Collections.emptyList());
 
-//         // when & then
-//         mockMvc.perform(post("/api/v1/books")
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(jsonRequest)
-//                         .with(csrf()))
-//                 .andExpect(status().isForbidden()); // Oczekujemy HTTP 403 Forbidden
-//     }
+        // when & then
+        mockMvc.perform(get("/api/v1/books/{id}/stats", id))
+                .andExpect(status().isNotFound());
+    }
 
-//     // usuwanie książki (Tylko ADMIN - Sukces)
-//     @Test
-//     @WithMockUser(roles = "ADMIN")
-//     void shouldDeleteBookAsAdmin() throws Exception {
-//         // given
-//         Long bookId = 10L;
+    // tworzenie książki (Tylko ADMIN)
+@Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldCreateBook() throws Exception {
+        // given
+        Author author = Author.builder().id(1L).firstName("Test").lastName("Author").build();
 
-//         // when & then
-//         mockMvc.perform(delete("/api/v1/books/{id}", bookId)
-//                         .with(csrf()))
-//                 .andExpect(status().isNoContent()); // Oczekujemy HTTP 204 No Content
+        Book book = Book.builder()
+                .title("New Book")
+                .isbn("9780261102217")
+                .author(author)     
+                .build();
+        
+        String json = objectMapper.writeValueAsString(book);
 
-//         verify(bookService).deleteBook(bookId);
-//     }
+        // when & then
+        mockMvc.perform(post("/api/v1/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .with(csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("New Book"));
 
-//     // pobieranie statystyk (JdbcTemplate)
-//     @Test
-//     @WithMockUser
-//     void shouldReturnBookStats() throws Exception {
-//         // given
-//         Long bookId = 1L;
-//         RatingStatDto stat = new RatingStatDto(5, 10L); // Ocena 5, 10 głosów
-//         when(bookService.getBookRatingStats(bookId)).thenReturn(List.of(stat));
+        verify(bookService).saveBook(any(Book.class));
+    }
 
-//         // when & then
-//         mockMvc.perform(get("/api/v1/books/{id}/stats", bookId))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$[0].rating").value(5))
-//                 .andExpect(jsonPath("$[0].count").value(10));
-//     }
+    // aktualizacja - SUKCES (Książka istnieje)
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldUpdateBookWhenExists() throws Exception {
+        // given
+        Long id = 1L;
+        Author author = Author.builder().id(1L).firstName("Update").lastName("Test").build();
 
-//     // wyszukiwanie książek (searchBooks)
-//     @Test
-//     @WithMockUser
-//     void shouldSearchBooks() throws Exception {
-//         // given
-//         String query = "Wiedźmin";
-//         BookDto bookDto = BookDto.builder().id(1L).title("Wiedźmin").build();
-//         Page<BookDto> page = new PageImpl<>(List.of(bookDto));
+        Book book = Book.builder()
+                .title("Updated Title")
+                .isbn("9780261102217") 
+                .author(author)    
+                .build();
+        
+        String json = objectMapper.writeValueAsString(book);
+        when(bookRepository.existsById(id)).thenReturn(true);
 
-//         when(bookService.searchBooks(any(String.class), any(Pageable.class))).thenReturn(page);
+        // when & then
+        mockMvc.perform(put("/api/v1/books/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .with(csrf()))
+                .andDo(org.springframework.test.web.servlet.result.MockMvcResultHandlers.print()) 
+                .andExpect(jsonPath("$.title").value("Updated Title"));
 
-//         // when & then
-//         mockMvc.perform(get("/api/v1/books/search")
-//                         .param("query", query)
-//                         .contentType(MediaType.APPLICATION_JSON))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.content[0].title").value("Wiedźmin"));
-//     }
+        verify(bookService).saveBook(any(Book.class));
+    }
 
-//     // aktualizacja książki (Tylko ADMIN - Sukces)
-//     @Test
-//     @WithMockUser(roles = "ADMIN")
-//     void shouldUpdateBookAsAdmin() throws Exception {
-//         // given
-//         Long bookId = 1L;
-//         Book updateInfo = Book.builder().title("Zaktualizowany Tytuł").isbn("111").build();
-//         String jsonRequest = objectMapper.writeValueAsString(updateInfo);
+    // aktualizacja - BŁĄD 404 (książka nie istnieje)
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldReturnNotFoundWhenUpdatingNonExistentBook() throws Exception {
+        // given
+        Long id = 99L;
+        Author author = Author.builder().id(1L).firstName("Ghost").lastName("Writer").build();
+        
+        Book book = Book.builder()
+                .title("Ghost Book")
+                .isbn("9780261102217") 
+                .author(author)    
+                .build();
+                
+        String json = objectMapper.writeValueAsString(book);
+        when(bookRepository.existsById(id)).thenReturn(false);
 
-//         // when & then
-//         mockMvc.perform(put("/api/v1/books/{id}", bookId)
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(jsonRequest)
-//                         .with(csrf()))
-//                 .andExpect(status().isOk())
-//                 .andExpect(jsonPath("$.title").value("Zaktualizowany Tytuł"));
+        // when & then
+        mockMvc.perform(put("/api/v1/books/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
 
-//         verify(bookService).saveBook(any(Book.class));
-//     }
+        verify(bookService, never()).saveBook(any(Book.class));
+    }
 
-//     // blokada aktualizacji książki (Zwykły USER - Forbidden)
-//     @Test
-//     @WithMockUser(roles = "USER")
-//     void shouldForbidUpdateBookForRegularUser() throws Exception {
-//         // given
-//         Long bookId = 1L;
-//         Book updateInfo = Book.builder().title("Hacker Update").build();
-//         String jsonRequest = objectMapper.writeValueAsString(updateInfo);
+    // usuwanie - SUKCES
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldDeleteBookWhenExists() throws Exception {
+        // given
+        Long id = 1L;
+        when(bookRepository.existsById(id)).thenReturn(true);
 
-//         // when & then
-//         mockMvc.perform(put("/api/v1/books/{id}", bookId)
-//                         .contentType(MediaType.APPLICATION_JSON)
-//                         .content(jsonRequest)
-//                         .with(csrf()))
-//                 .andExpect(status().isForbidden());
-//     }
+        // when & then
+        mockMvc.perform(delete("/api/v1/books/{id}", id)
+                        .with(csrf()))
+                .andExpect(status().isNoContent()); // 204
 
-//     // blokada usuwania książki (Zwykły USER - Forbidden)
-//     @Test
-//     @WithMockUser(roles = "USER")
-//     void shouldForbidDeleteBookForRegularUser() throws Exception {
-//         // given
-//         Long bookId = 1L;
+        verify(bookService).deleteBook(id);
+    }
 
-//         // when & then
-//         mockMvc.perform(delete("/api/v1/books/{id}", bookId)
-//                         .with(csrf()))
-//                 .andExpect(status().isForbidden());
-//     }
-// }
+    // usuwanie - BŁĄD 404
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void shouldReturnNotFoundWhenDeletingNonExistentBook() throws Exception {
+        // given
+        Long id = 99L;
+        when(bookRepository.existsById(id)).thenReturn(false);
+
+        // when & then
+        mockMvc.perform(delete("/api/v1/books/{id}", id)
+                        .with(csrf()))
+                .andExpect(status().isNotFound());
+
+        verify(bookService, never()).deleteBook(anyLong());
+    }
+}

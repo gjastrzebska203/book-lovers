@@ -373,4 +373,134 @@ public class UserServiceTest {
         Shelf finalShelfState = shelfCaptor.getAllValues().get(1);
         assertThat(finalShelfState.getBooks()).isEmpty();
     }
+
+    // updateUserProfile - User Not Found 
+    @Test
+    void shouldThrowExceptionWhenUpdatingProfileForNonExistentUser() {
+        // given
+        String username = "ghost";
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+
+        // when
+        Throwable thrown = catchThrowable(() -> 
+            userService.updateUserProfile(username, "bio", null));
+
+        // then
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessage("User not found");
+    }
+
+    // toggleUserBlock - User Not Found 
+    @Test
+    void shouldThrowExceptionWhenTogglingBlockForNonExistentUser() {
+        // given
+        Long userId = 999L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        // when
+        Throwable thrown = catchThrowable(() -> userService.toggleUserBlock(userId));
+
+        // then
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessage("User not found");
+    }
+
+    // generateProfileBackup - null dates & Exception catch (pokrywa gałęzie ternarne i blok try-catch)
+    @Test
+    void shouldHandleNullDatesAndExceptionsInBackup() {
+        String username = "userWithNullDates";
+        User user = User.builder().username(username).createdAt(null).build(); // User bez daty
+        Review review = Review.builder().book(Book.builder().title("B").build()).createdAt(null).build(); // Recenzja bez daty
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findAllByUserId(any())).thenReturn(List.of());
+        when(reviewRepository.findAllByUserId(any())).thenReturn(List.of(review));
+
+        byte[] result = userService.generateProfileBackup(username);
+        String json = new String(result);
+        
+        assertThat(json).contains("\"joinDate\" : \"\"");
+        assertThat(json).contains("\"createdAt\" : \"\"");
+
+        when(userRepository.findByUsername(username)).thenThrow(new RuntimeException("Database error"));
+        
+        Throwable thrown = catchThrowable(() -> userService.generateProfileBackup(username));
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessage("Błąd podczas generowania backupu");
+    }
+
+    // importProfile - Exception catch (pokrywa blok try-catch np. przy błędzie IO)
+    @Test
+    void shouldThrowExceptionWhenImportFails() throws IOException {
+        // given
+        String username = "user";
+        MultipartFile file = mock(MultipartFile.class);
+
+        when(file.getInputStream()).thenThrow(new IOException("Corrupted file"));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(new User()));
+
+        // when
+        Throwable thrown = catchThrowable(() -> userService.importProfile(username, file));
+
+        // then
+        assertThat(thrown).isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Błąd podczas importu danych");
+    }
+
+    // importProfile - Null Shelves (pokrywa if (backup.getShelves() != null))
+    @Test
+    void shouldHandleImportWithNoShelvesInJson() throws IOException {
+        // given
+        String username = "user";
+        User user = User.builder().id(1L).username(username).build();
+        String json = "{\"username\": \"user\", \"email\": \"u@u.pl\"}"; 
+        
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getInputStream()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        // when
+        userService.importProfile(username, file);
+
+        // then
+        verify(shelfRepository, never()).findByNameAndUserId(any(), any());
+        verify(shelfRepository, never()).save(any());
+    }
+
+    // importProfile - Book Already Exists (pokrywa if (!shelf.getBooks().contains(book)))
+    @Test
+    void shouldNotAddDuplicateBookToShelfDuringImport() throws IOException {
+        // given
+        String username = "user";
+        User user = User.builder().id(1L).build();
+        Book book = Book.builder().id(100L).title("Wiedźmin").build();
+        
+        Shelf shelf = Shelf.builder()
+                .name("Fantasy")
+                .user(user)
+                .books(new ArrayList<>(List.of(book))) 
+                .build();
+
+        String json = """
+            {
+              "shelves": [
+                { "name": "Fantasy", "books": ["Wiedźmin"] }
+              ]
+            }
+            """;
+
+        MultipartFile file = mock(MultipartFile.class);
+        when(file.getInputStream()).thenReturn(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(shelfRepository.findByNameAndUserId("Fantasy", user.getId())).thenReturn(Optional.of(shelf));
+        when(bookRepository.findByTitle("Wiedźmin")).thenReturn(Optional.of(book));
+
+        // when
+        userService.importProfile(username, file);
+
+        // then
+        verify(shelfRepository).save(shelf);
+        assertThat(shelf.getBooks()).hasSize(1); 
+    }
 }
