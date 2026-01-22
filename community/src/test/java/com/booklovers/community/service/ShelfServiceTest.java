@@ -2,6 +2,7 @@ package com.booklovers.community.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -345,5 +346,24 @@ public class ShelfServiceTest {
 
         // then
         verify(shelfRepository).deleteAllByUserId(userId);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenUserTriesToEditOthersShelf() {
+        User user2 = new User();
+        user2.setUsername("user2");
+        user2.setPassword("pass");
+        userRepository.save(user2);
+
+        Shelf shelfOfUser2 = new Shelf();
+        shelfOfUser2.setName("Półka Usera 2");
+        shelfOfUser2.setUser(user2);
+        shelfRepository.save(shelfOfUser2);
+
+        String loggedInUser = "user1"; 
+
+        assertThrows(RuntimeException.class, () -> {
+            shelfService.moveBook(shelfOfUser2.getId(), 999L, 1L, loggedInUser);
+        });
     }
 }

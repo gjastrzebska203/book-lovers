@@ -51,26 +51,24 @@ public class WebController {
         return "index";
     }
 
-    // formularz rejestracji (GET)
+    // formularz rejestracji
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("user", new UserRegisterDto());
         return "register";
     }
 
-    // obsługa rejestracji (POST)
+    // obsługa rejestracji
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") UserRegisterDto userDto, 
                                BindingResult result, 
                                Model model) {
-        
         if (result.hasErrors()) {
-            return "register";
+            return "register"; // Zwraca HTML z błędami
         }
-
         try {
-            userService.registerUser(userDto);
-            return "redirect:/login?success"; 
+            userService.registerUser(userDto); // Woła ten sam serwis co API!
+            return "redirect:/login?success";  // Przekierowuje
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());
             return "register";

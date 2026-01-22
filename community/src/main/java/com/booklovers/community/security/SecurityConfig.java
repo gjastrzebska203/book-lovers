@@ -44,7 +44,7 @@ public class SecurityConfig {
                     "/v3/api-docs/**",    
                     "/swagger-ui/**",
                     "/swagger-ui.html"
-                ).permitAll()
+                ).hasRole("ADMIN")
                 
                 // publiczne widoki HTML (Strona główna, Rejestracja, Logowanie)
                 .requestMatchers("/", "/index", "/register", "/login").permitAll()
