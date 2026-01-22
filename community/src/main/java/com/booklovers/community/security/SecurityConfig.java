@@ -51,17 +51,29 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
                 
                 // publiczne API (Endpointy REST)
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/books/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users/register").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()      
+                .requestMatchers(HttpMethod.GET, "/api/v1/authors/**").permitAll()    
+                .requestMatchers(HttpMethod.GET, "/api/v1/books/*/reviews").permitAll() 
+
+                // zarządznie książkami
+                .requestMatchers(HttpMethod.POST, "/api/v1/books/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/books/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/books/**").hasRole("ADMIN")
+
+                // zarządzanie autorami
+                .requestMatchers(HttpMethod.POST, "/api/v1/authors/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/authors/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/authors/**").hasRole("ADMIN")
+
+                // zarządzanie recenzjami
+                .requestMatchers("/api/v1/admin/reviews/**").hasRole("ADMIN")
 
                 // panel admina
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                
-                // REST API: POST, PUT, DELETE tylko dla Admina
-                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/books/**").hasRole("ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/v1/books/**").hasRole("ADMIN")
-                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/v1/books/**").hasRole("ADMIN")
 
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/users/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/users/*/toggle-block").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             
