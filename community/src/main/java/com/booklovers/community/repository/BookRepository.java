@@ -15,9 +15,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     boolean existsByIsbn(String isbn);
 
     @Query("SELECT b FROM Book b " +
-           "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "OR LOWER(b.author.lastName) LIKE LOWER(CONCAT('%', :query, '%')) " +
-           "OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :query, '%'))")
+       "WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :query, '%')) " +
+       "OR LOWER(b.author.firstName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+       "OR LOWER(b.author.lastName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+       "OR LOWER(b.isbn) LIKE LOWER(CONCAT('%', :query, '%'))")
     Page<Book> searchBooks(@Param("query") String query, Pageable pageable);
     
     Page<Book> findAll(Pageable pageable);

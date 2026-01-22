@@ -7,6 +7,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,7 +18,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // wymagane przez specyfikację
+        return new BCryptPasswordEncoder(); 
     }
 
     @Bean
@@ -34,40 +35,42 @@ public class SecurityConfig {
 
                 // zasoby statyczne
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+
+                // H2 Console
+                .requestMatchers("/h2-console/**").permitAll()
+
+                // swagger
+                .requestMatchers(
+                    "/v3/api-docs",      
+                    "/v3/api-docs/**",    
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 
                 // publiczne widoki HTML (Strona główna, Rejestracja, Logowanie)
                 .requestMatchers("/", "/index", "/register", "/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
                 
                 // publiczne API (Endpointy REST)
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                
-                // swagger i H2 Console
-                .requestMatchers("/h2-console/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-
-                // 3. KSIĄŻKI - Pozwalamy oglądać (GET) każdemu! <--- TU JEST KLUCZOWA ZMIANA
-                // Używamy HttpMethod.GET, żeby zablokować POST (dodawanie recenzji) dla niezalogowanych
-                .requestMatchers(HttpMethod.GET, "/books/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/books/**").permitAll()
 
                 // panel admina
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                // REST API: GET dostępne dla wszystkich
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/v1/books/**").permitAll()
                 
                 // REST API: POST, PUT, DELETE tylko dla Admina
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/books/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/v1/books/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/v1/books/**").hasRole("ADMIN")
-                
-                // wszystkie inne żądania wymagają bycia zalogowanym
+
                 .anyRequest().authenticated()
             )
             
-            // konfiguracja naszego formularza logowania
+            // konfiguracja formularza logowania
             .formLogin(login -> login
-                .loginPage("/login")        // adres naszego kontrolera (GET)
-                .loginProcessingUrl("/login") // adres, na który formularz wysyła dane (POST) -x Spring to obsłuży
-                .defaultSuccessUrl("/", true) // przekierowanie po sukcesie
+                .loginPage("/login")       
+                .loginProcessingUrl("/login") 
+                .defaultSuccessUrl("/", true) 
                 .permitAll()
             )
             
@@ -78,13 +81,11 @@ public class SecurityConfig {
                 .permitAll()
             )
 
-            // włączamy Basic Auth (dla testowania w Postmanie)
             .httpBasic(withDefaults());
 
         return http.build();
     }
 
-    // Bean AuthenticationManager (przydaje się przy własnym endpointcie logowania)
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();

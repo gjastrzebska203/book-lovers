@@ -20,17 +20,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // 1. Szukamy użytkownika w bazie
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Użytkownik nie znaleziony: " + username));
 
-        // 2. Tworzymy obiekt UserDetails (standard Spring Security)
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
                 user.isEnabled(),
                 true, true, true,
-                // Mapujemy naszą rolę (String) na SimpleGrantedAuthority
                 Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
         );
     }
